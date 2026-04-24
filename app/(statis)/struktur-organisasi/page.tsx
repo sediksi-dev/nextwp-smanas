@@ -39,8 +39,7 @@ export default function StrukturOrganisasiPage() {
                 >
                     <div className="flex flex-col items-center md:items-start gap-1 text-center md:text-left">
                         <p
-                            className="text-xs font-bold tracking-widest uppercase"
-                            style={{ color: "var(--site-accent)" }}
+                            className="text-xs font-bold tracking-widest uppercase text-site-accent"
                         >
                             Kepala Sekolah
                         </p>
@@ -58,7 +57,7 @@ export default function StrukturOrganisasiPage() {
 
                 {/* Connector line */}
                 <div className="flex justify-center">
-                    <div className="w-px h-10" style={{ background: "var(--site-border)" }} />
+                    <div className="w-px h-10 bg-site-border" />
                 </div>
 
                 {/* Waka — horizontal row with left-accent bars, no card boxing */}
@@ -66,10 +65,9 @@ export default function StrukturOrganisasiPage() {
                     {wakaList.map((waka) => (
                         <div
                             key={waka.name}
-                            className="bg-site-surface px-5 py-6 flex flex-col gap-1 border-t-4"
-                            style={{ borderTopColor: "var(--site-primary)" }}
+                            className="bg-site-surface px-5 py-6 flex flex-col gap-1 border-t-4 border-site-primary"
                         >
-                            <p className="text-[0.65rem] font-bold tracking-widest uppercase text-site-primary">
+                            <p className="text-xs font-bold tracking-widest uppercase text-site-primary">
                                 {waka.title}
                             </p>
                             <p className="font-semibold text-sm leading-snug text-foreground">
@@ -81,7 +79,7 @@ export default function StrukturOrganisasiPage() {
 
                 {/* Connector line */}
                 <div className="flex justify-center">
-                    <div className="w-px h-10" style={{ background: "var(--site-border)" }} />
+                    <div className="w-px h-10 bg-site-border" />
                 </div>
 
                 {/* Admin — plain text row with accent separator, distinctly lighter */}
@@ -89,10 +87,9 @@ export default function StrukturOrganisasiPage() {
                     {adminList.map((admin) => (
                         <div
                             key={admin.name}
-                            className="flex-1 px-8 py-5 flex flex-col gap-1 text-center border-t-4"
-                            style={{ borderTopColor: "var(--site-accent)" }}
+                            className="flex-1 px-8 py-5 flex flex-col gap-1 text-center border-t-4 border-site-accent"
                         >
-                            <p className="text-[0.65rem] font-bold tracking-widest uppercase" style={{ color: "var(--site-primary)" }}>
+                            <p className="text-xs font-bold tracking-widest uppercase text-site-primary">
                                 {admin.title}
                             </p>
                             <p className="font-semibold text-sm text-foreground">

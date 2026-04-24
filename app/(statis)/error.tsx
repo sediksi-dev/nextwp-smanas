@@ -7,7 +7,7 @@ export default function StatisError({
     reset: () => void;
 }) {
     return (
-        <div className="flex min-h-[50vh] flex-col items-center justify-center gap-6 px-4 text-center">
+        <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-4 text-center">
             <h2 className="text-xl font-bold text-foreground">Halaman Tidak Tersedia</h2>
             <p className="text-muted-foreground text-sm max-w-md">
                 Konten halaman ini tidak dapat dimuat. Silakan coba lagi atau kunjungi halaman lain.

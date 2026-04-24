@@ -60,7 +60,7 @@ export default function TentangPage() {
 
                             {/* Content */}
                             <div className="flex-1 min-w-0 flex flex-col gap-1 pt-2">
-                                <p className="text-[0.65rem] font-bold tracking-widest uppercase text-site-primary">
+                                <p className="text-xs font-bold tracking-widest uppercase text-site-primary">
                                     {dest.eyebrow}
                                 </p>
                                 <h2 className="text-2xl md:text-4xl font-bold text-foreground group-hover:text-primary transition-colors duration-200">

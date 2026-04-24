@@ -156,12 +156,12 @@ export default async function PrestasiPage({
                                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                                 />
                                 <div className="absolute top-2 left-2 z-10">
-                                    <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-site-accent text-foreground">
+                                    <span className="inline-block px-2 py-0.5 rounded-full text-xs font-bold bg-site-accent text-foreground">
                                         {achievement.category}
                                     </span>
                                 </div>
                                 <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
-                                    <span className="text-[10px] font-semibold tracking-wider uppercase text-white/70 mb-0.5">
+                                    <span className="text-xs font-semibold tracking-wider uppercase text-white/70 mb-0.5">
                                         {achievement.year}
                                     </span>
                                     <p className="text-sm font-semibold text-white leading-snug">

@@ -32,7 +32,7 @@ if (parsedCmsUrl) {
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: baseRemotePatterns,
-  },
+  }
 };
 
 export default nextConfig;

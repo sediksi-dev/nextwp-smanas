@@ -196,7 +196,7 @@ export default async function ProfilSekolahPage({
                                     <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                                         Mars SMA Nasional Malang
                                     </h2>
-                                    <div className="border-l-4 pl-6 py-2" style={{ borderLeftColor: "var(--site-primary)" }}>
+                                    <div className="border-l-4 border-site-primary pl-6 py-2">
                                         <p className="text-sm md:text-base leading-loose whitespace-pre-line text-foreground/80 font-medium italic">
                                             {`[Lirik Mars SMA Nasional Malang]
 

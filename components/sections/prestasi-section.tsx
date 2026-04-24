@@ -34,7 +34,7 @@ export function PrestasiSection() {
                             "px-5 py-1.5 rounded-full text-sm font-semibold border transition-colors",
                             activeYear === year
                                 ? "bg-site-primary text-white border-site-primary"
-                                : "border-site-border text-site-muted hover:border-site-primary hover:text-site-primary bg-white",
+                                : "border-site-border text-site-muted hover:border-site-primary hover:text-site-primary bg-white"
                         )}
                     >
                         {year}
@@ -58,7 +58,7 @@ export function PrestasiSection() {
                         />
                         {/* Hover overlay */}
                         <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
-                            <span className="text-[10px] font-semibold tracking-wider uppercase text-white/70 mb-0.5">{achievement.category}</span>
+                            <span className="text-xs font-semibold tracking-wider uppercase text-white/70 mb-0.5">{achievement.category}</span>
                             <p className="text-sm font-semibold text-white leading-snug">{achievement.title}</p>
                         </div>
                     </div>

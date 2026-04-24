@@ -65,7 +65,7 @@ export default function KontakPage() {
                             key={item.eyebrow}
                             className="flex flex-col gap-2 px-0 md:px-8 first:pl-0 last:pr-0 py-6 md:py-0"
                         >
-                            <p className="text-[0.65rem] font-bold tracking-widest uppercase text-site-primary">
+                            <p className="text-xs font-bold tracking-widest uppercase text-site-primary">
                                 {item.eyebrow}
                             </p>
                             <div className="flex flex-col gap-0.5">
@@ -99,7 +99,7 @@ export default function KontakPage() {
                 </div>
             </Section>
             <Section size="wide" py="sm">
-                <div className="overflow-hidden rounded-2xl border border-border" style={{ height: "420px" }}>
+                <div className="overflow-hidden rounded-2xl border border-border h-96">
                     <iframe
                         title="Lokasi SMA Nasional Malang"
                         src={schoolInfo.mapsEmbedUrl}

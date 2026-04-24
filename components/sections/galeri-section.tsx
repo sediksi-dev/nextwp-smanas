@@ -3,6 +3,7 @@ import { useState } from "react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
 import { Section } from "@/components/layout/section";
+import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import { Play } from "lucide-react";
@@ -30,10 +31,12 @@ export function GaleriSection() {
                     <button
                         key={f}
                         onClick={() => setActive(f)}
-                        className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${active === f
-                            ? "bg-site-primary text-white"
-                            : "bg-white border border-site-border text-site-muted hover:border-site-primary hover:text-site-primary"
-                            }`}
+                        className={cn(
+                            "px-4 py-1.5 rounded-full text-sm font-medium transition-colors",
+                            active === f
+                                ? "bg-site-primary text-white"
+                                : "bg-white border border-site-border text-site-muted hover:border-site-primary hover:text-site-primary"
+                        )}
                     >
                         {f}
                     </button>
@@ -69,7 +72,7 @@ export function GaleriSection() {
 
                             {/* Title overlay */}
                             <div className="absolute bottom-0 left-0 right-0 p-3">
-                                <span className="text-[10px] font-semibold tracking-wider uppercase text-white/70 mb-0.5 block">{item.type}</span>
+                                <span className="text-xs font-semibold tracking-wider uppercase text-white/70 mb-0.5 block">{item.type}</span>
                                 <p className="text-sm font-semibold text-white leading-tight">{item.title}</p>
                             </div>
                         </AspectRatio>
