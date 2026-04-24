@@ -2,10 +2,21 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageWrap } from "@/components/layout/page-wrap";
+import PageHeading from "@/components/elements/page-heading";
+
+export const metadata = {
+    title: "Galeri",
+    description: "Dokumentasi foto dan video kegiatan SMA Nasional Malang.",
+};
 
 export default function GaleriPage() {
     return (
         <PageWrap breadcrumb={[{ label: "Beranda", href: "/" }, { label: "Galeri" }]}>
+            <PageHeading
+                title="Galeri"
+                subtitle="Dokumentasi"
+                description="Kumpulan foto dan video dokumentasi kegiatan SMA Nasional Malang."
+            />
             <section className="container grid-3">
                 <Card>
                     <CardHeader>

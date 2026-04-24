@@ -2,6 +2,11 @@ import { Section } from "@/components/layout/section";
 import { PageWrap } from "@/components/layout/page-wrap";
 import PageHeading from "@/components/elements/page-heading";
 
+export const metadata = {
+    title: "Visi & Misi",
+    description: "Visi dan misi SMA Nasional Malang sebagai landasan penyelenggaraan pendidikan berkualitas di Kota Malang.",
+};
+
 const misi = [
     "Menyelenggarakan pendidikan akademik yang efektif dan efisien",
     "Meningkatkan prestasi akademik peserta didik",

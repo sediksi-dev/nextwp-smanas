@@ -31,8 +31,8 @@ export function GaleriSection() {
                         key={f}
                         onClick={() => setActive(f)}
                         className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${active === f
-                                ? "bg-site-primary text-white"
-                                : "bg-white border border-site-border text-site-muted hover:border-site-primary hover:text-site-primary"
+                            ? "bg-site-primary text-white"
+                            : "bg-white border border-site-border text-site-muted hover:border-site-primary hover:text-site-primary"
                             }`}
                     >
                         {f}
@@ -50,7 +50,7 @@ export function GaleriSection() {
                     >
                         <AspectRatio ratio={4 / 3}>
                             <Image
-                                src={item.image}
+                                src={item.type === "Video" ? `https://img.youtube.com/vi/${item.youtubeId}/mqdefault.jpg` : item.image}
                                 alt={item.title}
                                 fill
                                 className="object-cover transition-transform duration-500 group-hover:scale-105"

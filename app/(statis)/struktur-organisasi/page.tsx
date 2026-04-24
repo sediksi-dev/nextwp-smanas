@@ -2,6 +2,11 @@ import { Section } from "@/components/layout/section";
 import { PageWrap } from "@/components/layout/page-wrap";
 import PageHeading from "@/components/elements/page-heading";
 
+export const metadata = {
+    title: "Struktur Organisasi",
+    description: "Susunan organisasi dan jajaran kepemimpinan SMA Nasional Malang.",
+};
+
 const wakaList = [
     { title: "Waka Kurikulum", name: "Ismiatul Fadhilah, S.Pd." },
     { title: "Waka Kesiswaan", name: "Eka Listianingsih, S.Pd." },

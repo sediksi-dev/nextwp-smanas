@@ -4,6 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Section } from "@/components/layout/section";
 import { PageWrap } from "@/components/layout/page-wrap";
 
+export const metadata = {
+    title: "PPDB",
+    description: "Informasi Penerimaan Peserta Didik Baru (PPDB) SMA Nasional Malang: jadwal, persyaratan, dan hasil seleksi.",
+};
+
 const ppdbMenus = [
     {
         title: "Info Pendaftaran",

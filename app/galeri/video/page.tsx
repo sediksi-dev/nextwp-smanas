@@ -1,18 +1,25 @@
-import { mockGallery, GalleryVideo } from "@/lib/mock-data";
+import { mockGallery, type GalleryVideo } from "@/lib/mock/gallery";
 import { PageWrap } from "@/components/layout/page-wrap";
 import { Section } from "@/components/layout/section";
+import PageHeading from "@/components/elements/page-heading";
 
 export const revalidate = 7200;
+
+export const metadata = {
+    title: "Galeri Video",
+    description: "Kumpulan video dokumentasi kegiatan dan prestasi SMA Nasional Malang di YouTube.",
+};
 
 export default function GaleriVideoPage() {
     const videos = mockGallery.filter((item): item is GalleryVideo => item.type === "Video");
 
     return (
         <PageWrap breadcrumb={[{ label: "Beranda", href: "/" }, { label: "Galeri", href: "/galeri" }, { label: "Video" }]}>
-            <Section py="sm">
-                <h1 className="section-title">Galeri Video</h1>
-                <p className="section-copy">Video profil sekolah dan dokumentasi kegiatan SMA Nasional Malang.</p>
-            </Section>
+            <PageHeading
+                title="Galeri Video"
+                subtitle="Dokumentasi"
+                description="Video profil sekolah dan dokumentasi kegiatan SMA Nasional Malang."
+            />
             <Section py="none" className="pb-12">
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     {videos.map((video) => (

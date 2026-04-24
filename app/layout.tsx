@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist_Mono, Manrope, Public_Sans } from "next/font/google";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { schoolInfo } from "@/lib/config";
 import "./globals.css";
 
 const headlineFont = Manrope({
@@ -23,8 +24,20 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SMA Nasional Malang",
-  description: "Website resmi SMA Nasional Malang",
+  title: {
+    default: schoolInfo.name,
+    template: `%s | ${schoolInfo.name}`,
+  },
+  description: `Website resmi ${schoolInfo.name} — sekolah menengah atas swasta favorit di Kota Malang. Informasi PPDB, prestasi, guru, galeri, dan artikel sekolah.`,
+  metadataBase: new URL("https://smanasionalmalang.sch.id"),
+  openGraph: {
+    siteName: schoolInfo.name,
+    locale: "id_ID",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
 };
 
 export default function RootLayout({

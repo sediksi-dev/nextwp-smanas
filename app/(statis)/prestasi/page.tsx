@@ -1,97 +1,139 @@
-"use client";
-
-import { useState, useMemo } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Section } from "@/components/layout/section";
 import { PageWrap } from "@/components/layout/page-wrap";
 import { cn } from "@/lib/utils";
-import { mockAchievements } from "@/lib/mock-data";
+import { mockAchievements } from "@/lib/mock/achievements";
 import PageHeading from "@/components/elements/page-heading";
 
 const allYears = Array.from(new Set(mockAchievements.map((a) => a.year)))
     .sort((a, b) => b - a)
     .map(String);
 
-const allCategories = Array.from(new Set(mockAchievements.map((a) => a.category))).sort();
+const allCategories = Array.from(
+    new Set(mockAchievements.map((a) => a.category))
+).sort();
 
-export default function PrestasiPage() {
-    const [activeYear, setActiveYear] = useState<string>("Semua");
-    const [activeCategory, setActiveCategory] = useState<string>("Semua");
+export async function generateMetadata({
+    searchParams,
+}: {
+    searchParams: Promise<{ tahun?: string; kategori?: string }>;
+}) {
+    const { tahun, kategori } = await searchParams;
+    const parts = ["Prestasi & Penghargaan"];
+    if (tahun) parts.push(tahun);
+    if (kategori) parts.push(kategori);
+    return {
+        title: `${parts.join(" — ")} | SMA Nasional Malang`,
+        description:
+            "Daftar lengkap pencapaian akademik, olahraga, seni, teknologi, dan penghargaan institusi SMA Nasional Malang.",
+    };
+}
 
-    const filtered = useMemo(() => {
-        return mockAchievements.filter((a) => {
-            const yearMatch = activeYear === "Semua" || String(a.year) === activeYear;
-            const catMatch = activeCategory === "Semua" || a.category === activeCategory;
-            return yearMatch && catMatch;
-        });
-    }, [activeYear, activeCategory]);
+export default async function PrestasiPage({
+    searchParams,
+}: {
+    searchParams: Promise<{ tahun?: string; kategori?: string }>;
+}) {
+    const { tahun = "", kategori = "" } = await searchParams;
+
+    const filtered = mockAchievements.filter((a) => {
+        const yearMatch = !tahun || String(a.year) === tahun;
+        const catMatch = !kategori || a.category === kategori;
+        return yearMatch && catMatch;
+    });
+
+    function filterHref(nextTahun: string, nextKategori: string) {
+        const params = new URLSearchParams();
+        if (nextTahun) params.set("tahun", nextTahun);
+        if (nextKategori) params.set("kategori", nextKategori);
+        const qs = params.toString();
+        return qs ? `/prestasi?${qs}` : "/prestasi";
+    }
 
     return (
         <PageWrap breadcrumb={[{ label: "Beranda", href: "/" }, { label: "Prestasi" }]}>
 
-            {/* Page heading — plain, no card */}
             <PageHeading
                 title="Prestasi & Penghargaan"
                 subtitle="Pencapaian"
                 description="Daftar lengkap pencapaian akademik, olahraga, seni, teknologi, dan penghargaan institusi SMA Nasional Malang dari tahun ke tahun."
             />
 
-
             {/* Filters */}
             <Section py="sm">
                 <div className="flex flex-col gap-4">
-                    {/* Year filter */}
                     <div className="flex flex-wrap items-center gap-2">
                         <span className="text-xs font-semibold text-muted-foreground shrink-0 w-16">Tahun</span>
                         <div className="flex flex-wrap gap-2">
-                            {["Semua", ...allYears].map((year) => (
-                                <button
+                            <Link
+                                href={filterHref("", kategori)}
+                                className={cn(
+                                    "px-4 py-1 rounded-full text-sm font-semibold border transition-colors",
+                                    !tahun
+                                        ? "bg-site-primary text-white border-site-primary"
+                                        : "bg-white border-site-border text-site-muted hover:border-site-primary hover:text-site-primary",
+                                )}
+                            >
+                                Semua
+                            </Link>
+                            {allYears.map((year) => (
+                                <Link
                                     key={year}
-                                    onClick={() => setActiveYear(year)}
+                                    href={filterHref(year, kategori)}
                                     className={cn(
                                         "px-4 py-1 rounded-full text-sm font-semibold border transition-colors",
-                                        activeYear === year
+                                        tahun === year
                                             ? "bg-site-primary text-white border-site-primary"
                                             : "bg-white border-site-border text-site-muted hover:border-site-primary hover:text-site-primary",
                                     )}
                                 >
                                     {year}
-                                </button>
+                                </Link>
                             ))}
                         </div>
                     </div>
 
-                    {/* Category filter */}
                     <div className="flex flex-wrap items-center gap-2">
                         <span className="text-xs font-semibold text-muted-foreground shrink-0 w-16">Kategori</span>
                         <div className="flex flex-wrap gap-2">
-                            {["Semua", ...allCategories].map((cat) => (
-                                <button
+                            <Link
+                                href={filterHref(tahun, "")}
+                                className={cn(
+                                    "px-4 py-1 rounded-full text-sm font-semibold border transition-colors",
+                                    !kategori
+                                        ? "bg-site-accent text-foreground border-site-accent"
+                                        : "bg-white border-site-border text-site-muted hover:border-site-accent hover:text-foreground",
+                                )}
+                            >
+                                Semua
+                            </Link>
+                            {allCategories.map((cat) => (
+                                <Link
                                     key={cat}
-                                    onClick={() => setActiveCategory(cat)}
+                                    href={filterHref(tahun, cat)}
                                     className={cn(
                                         "px-4 py-1 rounded-full text-sm font-semibold border transition-colors",
-                                        activeCategory === cat
+                                        kategori === cat
                                             ? "bg-site-accent text-foreground border-site-accent"
                                             : "bg-white border-site-border text-site-muted hover:border-site-accent hover:text-foreground",
                                     )}
                                 >
                                     {cat}
-                                </button>
+                                </Link>
                             ))}
                         </div>
                     </div>
 
-                    {/* Result count */}
                     <p className="text-xs text-muted-foreground">
                         Menampilkan{" "}
                         <span className="font-bold text-foreground">{filtered.length}</span>{" "}
                         prestasi
-                        {activeYear !== "Semua" && (
-                            <> tahun <span className="font-bold text-foreground">{activeYear}</span></>
+                        {tahun && (
+                            <> tahun <span className="font-bold text-foreground">{tahun}</span></>
                         )}
-                        {activeCategory !== "Semua" && (
-                            <> · kategori <span className="font-bold text-foreground">{activeCategory}</span></>
+                        {kategori && (
+                            <> &middot; kategori <span className="font-bold text-foreground">{kategori}</span></>
                         )}
                     </p>
                 </div>
@@ -113,15 +155,11 @@ export default function PrestasiPage() {
                                     sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                                 />
-
-                                {/* Category badge */}
                                 <div className="absolute top-2 left-2 z-10">
                                     <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-site-accent text-foreground">
                                         {achievement.category}
                                     </span>
                                 </div>
-
-                                {/* Hover overlay */}
                                 <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
                                     <span className="text-[10px] font-semibold tracking-wider uppercase text-white/70 mb-0.5">
                                         {achievement.year}
@@ -138,12 +176,12 @@ export default function PrestasiPage() {
                         <p className="text-muted-foreground text-sm">
                             Tidak ada prestasi untuk filter yang dipilih.
                         </p>
-                        <button
-                            onClick={() => { setActiveYear("Semua"); setActiveCategory("Semua"); }}
-                            className="mt-4 text-site-primary text-sm font-semibold hover:underline"
+                        <Link
+                            href="/prestasi"
+                            className="mt-4 inline-block text-site-primary text-sm font-semibold hover:underline"
                         >
                             Reset filter
-                        </button>
+                        </Link>
                     </div>
                 )}
             </Section>

@@ -1,19 +1,26 @@
 import Image from "next/image";
-import { mockGallery, GalleryPhoto } from "@/lib/mock-data";
+import { mockGallery, type GalleryPhoto } from "@/lib/mock/gallery";
 import { PageWrap } from "@/components/layout/page-wrap";
 import { Section } from "@/components/layout/section";
+import PageHeading from "@/components/elements/page-heading";
 
 export const revalidate = 7200;
+
+export const metadata = {
+    title: "Galeri Foto",
+    description: "Kumpulan foto dokumentasi kegiatan, prestasi, dan kehidupan sekolah SMA Nasional Malang.",
+};
 
 export default function GaleriFotoPage() {
     const photos = mockGallery.filter((item): item is GalleryPhoto => item.type === "Foto");
 
     return (
         <PageWrap breadcrumb={[{ label: "Beranda", href: "/" }, { label: "Galeri", href: "/galeri" }, { label: "Foto" }]}>
-            <Section py="sm">
-                <h1 className="section-title">Galeri Foto</h1>
-                <p className="section-copy">Dokumentasi kegiatan dan momen berharga SMA Nasional Malang.</p>
-            </Section>
+            <PageHeading
+                title="Galeri Foto"
+                subtitle="Dokumentasi"
+                description="Dokumentasi kegiatan dan momen berharga SMA Nasional Malang."
+            />
             <Section py="none" className="pb-12">
                 <div className="columns-2 gap-4 sm:columns-3 lg:columns-4">
                     {photos.map((photo) => (

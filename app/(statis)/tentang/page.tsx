@@ -3,6 +3,11 @@ import Link from "next/link";
 import { PageWrap } from "@/components/layout/page-wrap";
 import PageHeading from "@/components/elements/page-heading";
 
+export const metadata = {
+    title: "Tentang Kami",
+    description: "Pelajari lebih lanjut tentang profil, visi misi, dan struktur organisasi SMA Nasional Malang.",
+};
+
 const destinations = [
     {
         number: "01",

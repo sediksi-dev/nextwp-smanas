@@ -1,10 +1,25 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Section } from "@/components/layout/section";
 import { PageWrap } from "@/components/layout/page-wrap";
-import { mockPosts } from "@/lib/mock-data";
+import PageHeading from "@/components/elements/page-heading";
+import { mockPosts } from "@/lib/mock/posts";
+
+export async function generateMetadata({
+    searchParams,
+}: {
+    searchParams: Promise<{ kategori?: string }>;
+}): Promise<Metadata> {
+    const { kategori } = await searchParams;
+    const title = kategori ? `${kategori} — Artikel` : "Artikel & Informasi";
+    return {
+        title,
+        description: `Baca berita, agenda, karya, dan informasi terbaru dari SMA Nasional Malang${kategori ? ` kategori ${kategori}` : ""
+            }.`,
+    };
+}
 
 const tabs = [
     { label: "Semua", value: "" },
@@ -30,10 +45,11 @@ export default async function ArtikelPage({
 
     return (
         <PageWrap breadcrumb={[{ label: "Beranda", href: "/" }, { label: "Artikel" }]}>
-            <Section py="sm">
-                <h1 className="section-title">Artikel &amp; Informasi</h1>
-                <p className="section-copy">Berita, agenda, karya, ekskul, dan informasi sekolah.</p>
-            </Section>
+            <PageHeading
+                title="Artikel & Informasi"
+                subtitle="Informasi Sekolah"
+                description="Berita, agenda, karya, ekskul, dan informasi sekolah."
+            />
 
             <div className="container">
                 <div className="flex flex-wrap gap-2 border-b border-border pb-4 mb-8">
