@@ -1,4 +1,5 @@
-import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { Section } from "@/components/layout/section";
+import { PageWrap } from "@/components/layout/page-wrap";
 
 const steps = [
     "Registrasi akun pendaftar melalui kanal resmi sekolah",
@@ -10,22 +11,12 @@ const steps = [
 
 export default function InfoPendaftaranPage() {
     return (
-        <main className="page-wrap">
-            <div className="container">
-                <Breadcrumb
-                    items={[
-                        { label: "Beranda", href: "/" },
-                        { label: "PPDB", href: "/ppdb" },
-                        { label: "Info Pendaftaran" },
-                    ]}
-                />
-            </div>
-
-            <section className="container surface section">
+        <PageWrap breadcrumb={[{ label: "Beranda", href: "/" }, { label: "PPDB", href: "/ppdb" }, { label: "Info Pendaftaran" }]}>
+            <Section py="sm">
                 <p className="eyebrow">Info Pendaftaran</p>
                 <h1 className="section-title">Tahapan PPDB 2026/2027</h1>
                 <p className="section-copy">Pastikan setiap tahapan dilakukan sesuai jadwal resmi.</p>
-            </section>
+            </Section>
 
             <section className="container surface section">
                 <ol style={{ margin: 0, paddingLeft: "1.1rem", display: "grid", gap: "0.7rem" }}>
@@ -34,6 +25,6 @@ export default function InfoPendaftaranPage() {
                     ))}
                 </ol>
             </section>
-        </main>
+        </PageWrap>
     );
 }

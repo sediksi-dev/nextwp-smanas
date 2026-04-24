@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { Section } from "@/components/layout/section";
+import { PageWrap } from "@/components/layout/page-wrap";
 
 const ppdbMenus = [
     {
@@ -23,18 +24,14 @@ const ppdbMenus = [
 
 export default function PpdbPage() {
     return (
-        <main className="page-wrap">
-            <div className="container">
-                <Breadcrumb items={[{ label: "Beranda", href: "/" }, { label: "PPDB" }]} />
-            </div>
-
-            <section className="container surface section">
+        <PageWrap breadcrumb={[{ label: "Beranda", href: "/" }, { label: "PPDB" }]}>
+            <Section py="sm">
                 <p className="eyebrow">Penerimaan Peserta Didik Baru</p>
                 <h1 className="section-title">PPDB SMA Nasional Malang</h1>
                 <p className="section-copy">
                     Akses cepat untuk seluruh informasi PPDB tahun ajaran terbaru.
                 </p>
-            </section>
+            </Section>
 
             <section className="container grid-3">
                 {ppdbMenus.map((menu) => (
@@ -51,6 +48,6 @@ export default function PpdbPage() {
                     </Card>
                 ))}
             </section>
-        </main>
+        </PageWrap>
     );
 }

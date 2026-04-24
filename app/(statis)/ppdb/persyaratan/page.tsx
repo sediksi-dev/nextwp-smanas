@@ -1,4 +1,5 @@
-import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { Section } from "@/components/layout/section";
+import { PageWrap } from "@/components/layout/page-wrap";
 
 const requirements = [
     "Fotokopi ijazah/SKL SMP sederajat",
@@ -10,21 +11,11 @@ const requirements = [
 
 export default function PersyaratanPage() {
     return (
-        <main className="page-wrap">
-            <div className="container">
-                <Breadcrumb
-                    items={[
-                        { label: "Beranda", href: "/" },
-                        { label: "PPDB", href: "/ppdb" },
-                        { label: "Persyaratan" },
-                    ]}
-                />
-            </div>
-
-            <section className="container surface section">
+        <PageWrap breadcrumb={[{ label: "Beranda", href: "/" }, { label: "PPDB", href: "/ppdb" }, { label: "Persyaratan" }]}>
+            <Section py="sm">
                 <p className="eyebrow">Persyaratan</p>
                 <h1 className="section-title">Dokumen Wajib PPDB</h1>
-            </section>
+            </Section>
 
             <section className="container grid-3">
                 {requirements.map((item) => (
@@ -33,6 +24,6 @@ export default function PersyaratanPage() {
                     </article>
                 ))}
             </section>
-        </main>
+        </PageWrap>
     );
 }

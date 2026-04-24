@@ -37,7 +37,7 @@ export default function RootLayout({
       lang="id"
       className={`${headlineFont.variable} ${bodyFont.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-site text-site">
+      <body className="min-h-full flex flex-col bg-site-bg text-site-text">
         <SiteHeader />
         {children}
         <SiteFooter />

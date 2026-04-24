@@ -4,11 +4,11 @@ import { NavItem, SiteLink } from "./site.d";
 export const navItems: NavItem[] = [
     {
         label: "Tentang Kami",
-        href: "/tentang-kami",
+        href: "/tentang",
         children: [
             { label: "Profil Sekolah", href: "/profil-sekolah" },
-            { label: "Visi & Misi", href: "/profil-sekolah#visi-misi" },
-            { label: "Struktur Sekolah", href: "/profil-sekolah#struktur-sekolah" },
+            { label: "Visi & Misi", href: "/visi-misi" },
+            { label: "Struktur Organisasi", href: "/struktur-organisasi" },
         ],
     },
     { label: "Prestasi", href: "/prestasi" },
@@ -20,18 +20,7 @@ export const navItems: NavItem[] = [
             { label: "Video", href: "/galeri/video" },
         ],
     },
-    {
-        label: "Info",
-        children: [
-            { label: "Berita", href: "/berita" },
-            { label: "Agenda", href: "/agenda" },
-            { label: "Ekskul", href: "/ekskul" },
-            { label: "Kliping Media", href: "/kliping-media" },
-            { label: "Karya Siswa", href: "/karya-siswa" },
-            { label: "Karya Guru", href: "/karya-guru" },
-            { label: "Inspirasi", href: "/inspirasi" },
-        ],
-    },
+    { label: "Artikel", href: "/artikel" },
     { label: "Kontak", href: "/kontak" },
 ];
 
@@ -48,19 +37,19 @@ export const footerGroups: Array<{ title: string; links: SiteLink[] }> = [
     {
         title: "Akademik",
         links: [
-            { label: "Guru", href: "/guru-karyawan/guru" },
-            { label: "Staf", href: "/guru-karyawan/staf" },
+            { label: "Guru & Karyawan", href: "/guru-karyawan" },
             { label: "Dokumen Siswa", href: "/dokumen/siswa" },
             { label: "Dokumen Guru", href: "/dokumen/guru" },
         ],
     },
     {
-        title: "Info & Berita",
+        title: "Artikel & Info",
         links: [
-            { label: "Berita", href: "/berita" },
-            { label: "Agenda", href: "/agenda" },
-            { label: "Inspirasi", href: "/inspirasi" },
-            { label: "Kliping Media", href: "/kliping-media" },
+            { label: "Artikel", href: "/artikel" },
+            { label: "Berita", href: "/artikel?kategori=berita" },
+            { label: "Agenda", href: "/artikel?kategori=agenda" },
+            { label: "Inspirasi", href: "/artikel?kategori=inspirasi" },
+            { label: "Kliping Media", href: "/artikel?kategori=kliping-media" },
         ],
     },
 ];

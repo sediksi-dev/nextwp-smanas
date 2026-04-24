@@ -1,25 +1,16 @@
-import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { Section } from "@/components/layout/section";
+import { PageWrap } from "@/components/layout/page-wrap";
 
 export default function HasilSeleksiPage() {
     return (
-        <main className="page-wrap">
-            <div className="container">
-                <Breadcrumb
-                    items={[
-                        { label: "Beranda", href: "/" },
-                        { label: "PPDB", href: "/ppdb" },
-                        { label: "Hasil Seleksi" },
-                    ]}
-                />
-            </div>
-
-            <section className="container surface section">
+        <PageWrap breadcrumb={[{ label: "Beranda", href: "/" }, { label: "PPDB", href: "/ppdb" }, { label: "Hasil Seleksi" }]}>
+            <Section py="sm">
                 <p className="eyebrow">Hasil Seleksi</p>
                 <h1 className="section-title">Pengumuman PPDB</h1>
                 <p className="section-copy">
                     Hasil seleksi akan dipublikasikan sesuai jadwal resmi panitia. Silakan cek berkala.
                 </p>
-            </section>
+            </Section>
 
             <section className="container surface section">
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -39,6 +30,6 @@ export default function HasilSeleksiPage() {
                     </tbody>
                 </table>
             </section>
-        </main>
+        </PageWrap>
     );
 }

@@ -1,15 +1,11 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { PageWrap } from "@/components/layout/page-wrap";
 
 export default function GaleriPage() {
     return (
-        <main className="page-wrap">
-            <div className="container">
-                <Breadcrumb items={[{ label: "Beranda", href: "/" }, { label: "Galeri" }]} />
-            </div>
-
+        <PageWrap breadcrumb={[{ label: "Beranda", href: "/" }, { label: "Galeri" }]}>
             <section className="container grid-3">
                 <Card>
                     <CardHeader>
@@ -34,6 +30,6 @@ export default function GaleriPage() {
                     </CardContent>
                 </Card>
             </section>
-        </main>
+        </PageWrap>
     );
 }

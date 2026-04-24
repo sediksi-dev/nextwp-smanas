@@ -12,6 +12,21 @@ const nextConfig: NextConfig = {
           hostname: parsedCmsUrl.hostname,
           pathname: "/**",
         },
+        {
+          protocol: "https",
+          hostname: "picsum.photos",
+          pathname: "/**",
+        },
+        {
+          protocol: "https",
+          hostname: "loremflickr.com",
+          pathname: "/**",
+        },
+        {
+          protocol: "https",
+          hostname: "loremflickr.com",
+          pathname: "/**",
+        }
       ],
     }
     : undefined,
