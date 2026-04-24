@@ -1,7 +1,20 @@
 import type { NextConfig } from "next";
 
+const cmsUrl = process.env.NEXT_PUBLIC_WP_URL;
+const parsedCmsUrl = cmsUrl ? new URL(cmsUrl) : null;
+
 const nextConfig: NextConfig = {
-  /* config options here */
+  images: parsedCmsUrl
+    ? {
+      remotePatterns: [
+        {
+          protocol: parsedCmsUrl.protocol.replace(":", "") as "http" | "https",
+          hostname: parsedCmsUrl.hostname,
+          pathname: "/**",
+        },
+      ],
+    }
+    : undefined,
 };
 
 export default nextConfig;
