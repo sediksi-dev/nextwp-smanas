@@ -119,8 +119,8 @@ const Lead = React.forwardRef<
 Lead.displayName = "Lead";
 
 const Blockquote = React.forwardRef<
-  HTMLblockquoteElement,
-  React.HTMLAttributes<HTMLblockquoteElement>
+  HTMLQuoteElement,
+  React.HTMLAttributes<HTMLQuoteElement>
 >(({ className, ...props }, ref) => (
   <blockquote
     ref={ref}

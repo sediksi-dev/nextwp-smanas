@@ -26,11 +26,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
 
     const title =
-        typeof post.title === "string" ? post.title : post.title.rendered;
+        typeof post.title === "string" ? post.title : post.title?.rendered;
     const description =
         typeof post.excerpt === "string"
             ? post.excerpt
-            : post.excerpt.rendered.replace(/<[^>]+>/g, "");
+            : post.excerpt?.rendered?.replace(/<[^>]+>/g, "") ?? "";
 
     return {
         title: `${title} | SMA Nasional Malang`,
@@ -45,11 +45,11 @@ export default async function ArtikelDetailPage({ params }: Props) {
     if (!post) notFound();
 
     const title =
-        typeof post.title === "string" ? post.title : post.title.rendered;
+        typeof post.title === "string" ? post.title : post.title?.rendered;
     const content =
         typeof post.content === "string"
             ? post.content
-            : post.content.rendered;
+            : post.content?.rendered ?? "";
     const date = new Date(post.date).toLocaleDateString("id-ID", {
         day: "numeric",
         month: "long",
@@ -119,11 +119,11 @@ export default async function ArtikelDetailPage({ params }: Props) {
                             const relTitle =
                                 typeof relPost.title === "string"
                                     ? relPost.title
-                                    : relPost.title.rendered;
+                                    : relPost.title?.rendered;
                             const relExcerpt =
                                 typeof relPost.excerpt === "string"
                                     ? relPost.excerpt
-                                    : relPost.excerpt.rendered.replace(/<[^>]+>/g, "");
+                                    : relPost.excerpt?.rendered.replace(/<[^>]+>/g, "");
                             const relMock = mockPosts.find((p) => p.slug === relPost.slug);
                             return (
                                 <Link
