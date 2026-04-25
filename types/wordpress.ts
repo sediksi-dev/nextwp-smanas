@@ -53,6 +53,9 @@ export type SliderSettings = {
 
 
 export type GreetingsSectionConfig = {
+    greetings_section_title: string;
+    greetings_section_description?: string;
+    greetings_section_eyebrow?: string;
     greetings_title: string;
     greetings_subtitle: string;
     greetings_photo: {
@@ -62,10 +65,17 @@ export type GreetingsSectionConfig = {
     greetings_description: string;
 };
 
+export type AchievementsSectionConfig = {
+    achievements_section_title: string;
+    achievements_section_description?: string;
+    achievements_section_eyebrow?: string;
+};
+
 export type SmanasSiteConfig = {
     site: WpSiteInfo;
     slider: SliderSettings;
     greetings: GreetingsSectionConfig;
+    achievements: AchievementsSectionConfig;
 }
 
 // ──── Achievements ────────────────────────────────────────────────────────────────

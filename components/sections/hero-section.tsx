@@ -54,7 +54,7 @@ export function HeroSection({ sliderItems }: HeroSectionProps) {
                     <CarouselContent className="ml-0">
                         {sliderItems.map((slide, index) => (
                             <CarouselItem key={index} className="pl-0">
-                                <div className="relative h-105 md:h-140 lg:h-160 rounded-2xl overflow-hidden">
+                                <div className="relative h-120 md:h-140 lg:h-160 rounded-2xl overflow-hidden">
                                     <Image
                                         src={slide.backgroundImage}
                                         alt={slide.title}

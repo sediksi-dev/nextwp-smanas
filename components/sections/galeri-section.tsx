@@ -8,6 +8,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Play } from "lucide-react";
 import { mockGallery } from "@/lib/mock-data";
+import { SectionTitle } from "@/components/elements/section-title";
 
 const FILTERS = ["Semua", "Foto", "Video"] as const;
 type Filter = typeof FILTERS[number];
@@ -18,12 +19,12 @@ export function GaleriSection() {
 
     return (
         <Section className="bg-site-bg">
-            <p className="text-xs font-bold tracking-widest uppercase text-site-primary text-center">
-                Dokumentasi
-            </p>
-            <h2 className="mt-2 text-3xl md:text-4xl font-bold tracking-tight text-center mb-6">
-                Galeri Sekolah
-            </h2>
+            <SectionTitle
+                variant="underline"
+                eyebrow="Dokumentasi"
+                title="Galeri Sekolah"
+                description="Momen dan kenangan berharga dalam berbagai kegiatan di SMA Nasional Malang."
+            />
 
             {/* Filter tabs */}
             <div className="flex justify-center gap-2 mb-8">

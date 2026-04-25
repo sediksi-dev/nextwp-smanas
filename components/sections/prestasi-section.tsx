@@ -11,6 +11,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { SectionTitle } from "@/components/elements/section-title";
 
 const SCOPE_LABELS: Record<string, string> = {
     kecamatan: "Kecamatan",
@@ -71,26 +72,35 @@ function AchievementDialog({ achievement, onClose }: { achievement: Achievement 
     );
 }
 
-export function PrestasiSection({ achievements }: { achievements: Achievement[] }) {
+export interface PrestasiSectionProps {
+    achievements: Achievement[];
+    achievements_section_title: string;
+    achievements_section_description?: string;
+    achievements_section_eyebrow?: string;
+}
+
+
+export function PrestasiSection(props: PrestasiSectionProps) {
     const [activeScope, setActiveScope] = useState<AchievementScope>("regional");
     const [selected, setSelected] = useState<Achievement | null>(null);
 
-    const filtered = achievements
+    const filtered = props.achievements
         .filter((a) => a.scope === activeScope)
         .slice(0, 8);
 
     return (
         <Section>
-            <p className="text-xs font-bold tracking-widest uppercase text-site-primary text-center">
-                Penghargaan
-            </p>
-            <h2 className="mt-2 text-3xl md:text-4xl font-bold tracking-tight text-center mb-6">
-                Prestasi dan Penghargaan
-            </h2>
+            <SectionTitle
+                variant="default"
+                eyebrow={props.achievements_section_eyebrow}
+                title={props.achievements_section_title}
+                description={props.achievements_section_description}
+                className="mb-6"
+            />
 
             {/* Scope filter */}
             <div className="flex flex-wrap justify-center gap-2 mb-8">
-                {scopes.filter(scope => achievements.some(a => a.scope === scope)).map((scope) => (
+                {scopes.filter(scope => props.achievements.some(a => a.scope === scope)).map((scope) => (
                     <button
                         key={scope}
                         onClick={() => setActiveScope(scope)}

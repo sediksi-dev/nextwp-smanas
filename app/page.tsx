@@ -7,10 +7,8 @@ import { GaleriSection } from "@/components/sections/galeri-section";
 import { getAchievementsWithImage, getSiteConfig } from "@/lib/wordpress";
 
 
-
 export default async function Home() {
   const config = await getSiteConfig();
-  const achievements = await getAchievementsWithImage();
 
   // Configuration for Hero Section (Slider)
   const sliderItems = config?.slider.items || [];
@@ -35,8 +33,24 @@ export default async function Home() {
       role: greetingsConfig.greetings_subtitle,
       photo: greetingsConfig.greetings_photo.url,
       message: greetingsConfig.greetings_description,
+      section: {
+        title: greetingsConfig.greetings_section_title,
+        description: greetingsConfig.greetings_section_description,
+        eyebrow: greetingsConfig.greetings_section_eyebrow,
+      },
     }
     : undefined;
+
+  // Configuration for Prestasi Section (Achievements)
+  const achievements = await getAchievementsWithImage();
+  const achievementsProps = config?.achievements
+    ? {
+      achievements_section_title: config.achievements.achievements_section_title,
+      achievements_section_description: config.achievements.achievements_section_description,
+      achievements_section_eyebrow: config.achievements.achievements_section_eyebrow,
+    }
+    : undefined;
+  console.log("Achievements section config:", config);
 
   return (
     <PageWrap>
@@ -49,7 +63,7 @@ export default async function Home() {
         cta2: item.button_text_2 && item.button_url_2 ? { text: item.button_text_2, href: item.button_url_2 } : undefined,
       }))} />
       {sambutanProps && <SambutanSection {...sambutanProps} />}
-      <PrestasiSection achievements={achievements ?? []} />
+      {achievementsProps && <PrestasiSection achievements={achievements} {...achievementsProps} />}
       <PostsSection />
       <GaleriSection />
     </PageWrap>
