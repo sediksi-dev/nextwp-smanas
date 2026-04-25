@@ -41,9 +41,19 @@ export const socialLinks = [
         icon: "instagram",
     },
     {
+        label: "TikTok",
+        href: "https://www.tiktok.com/@smanasionalmalang",
+        icon: "tiktok",
+    },
+    {
         label: "YouTube",
         href: "https://www.youtube.com/@smanasionalmalang",
         icon: "youtube",
+    },
+    {
+        label: "Email",
+        href: "mailto:websmanasionalmalang@gmail.com",
+        icon: "email",
     },
 ] as const;
 

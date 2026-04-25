@@ -347,41 +347,11 @@ a {
   background: color-mix(in srgb, var(--site-primary) 10%, var(--site-surface));
 }
 
-.site-footer {
-  border-top: 1px solid var(--site-border);
-  margin-top: auto;
-  padding: 2.2rem 0;
-}
-
-.footer-grid {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-.footer-grid h4 {
-  margin: 0;
-}
-
-.footer-grid ul {
-  display: grid;
-  gap: 0.45rem;
-  list-style: none;
-  margin: 0.6rem 0 0;
-  padding: 0;
-}
-
-.footer-note {
-  border-top: 1px dashed var(--site-border);
-  color: var(--site-muted);
-  margin-top: 1rem;
-  padding-top: 1rem;
-}
+/* site-footer styles moved to Tailwind utility classes in site-footer.tsx */
 
 @media (max-width: 980px) {
   .hero-grid,
-  .grid-3,
-  .footer-grid {
+  .grid-3 {
     grid-template-columns: 1fr;
   }
 
