@@ -90,7 +90,7 @@ export async function PostsSection(props: PostsSectionProps) {
                         ))}
                     </div>
                     <Button asChild variant="outline" className="self-start">
-                        <Link href="/berita">Lihat Semua Berita</Link>
+                        <Link href={`/category/${props.article_groups?.group1?.category.slug || DEFAULT_CATEGORY.slug}`}>Lihat Semua {props.article_groups?.group1?.title || "Agenda"}</Link>
                     </Button>
                 </div>
 
@@ -112,7 +112,7 @@ export async function PostsSection(props: PostsSectionProps) {
                         ))}
                     </div>
                     <Button asChild variant="outline" className="self-start">
-                        <Link href="/artikel">Lihat Semua Event</Link>
+                        <Link href={`/category/${props.article_groups?.group2?.category.slug || DEFAULT_CATEGORY.slug}`}>Lihat Semua {props.article_groups?.group2?.title || "Event"}</Link>
                     </Button>
                 </div>
 
@@ -134,7 +134,7 @@ export async function PostsSection(props: PostsSectionProps) {
                         ))}
                     </div>
                     <Button asChild variant="outline" className="self-start">
-                        <Link href="/inspirasi">Lihat Semua Inspirasi</Link>
+                        <Link href={`/category/${props.article_groups?.group3?.category.slug || DEFAULT_CATEGORY.slug}`}>Lihat Semua {props.article_groups?.group3?.title || "Inspirasi"}</Link>
                     </Button>
                 </div>
 

@@ -31,6 +31,17 @@ export type WpPost = {
     class_list: string[];
 };
 
+export type WpCategory = {
+    id: number;
+    count: number;
+    description: string;
+    link: string;
+    name: string;
+    slug: string;
+    taxonomy: string;
+    parent: number;
+};
+
 export type WpMediaItem = {
     id: number;
     date: string;
