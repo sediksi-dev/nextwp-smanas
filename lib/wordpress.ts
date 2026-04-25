@@ -118,6 +118,15 @@ export async function getAchievementsWithImage() {
         })) as Achievement[]; // Only return achievements that have an image for the PrestasiSection
         return fallback;
     }
+
+    // order by year desc and then by _ID desc to maintain consistency with the mock data ordering
+    data.sort((a, b) => {
+        if (b.year !== a.year) {
+            return b.year - a.year; // Newer achievements first
+        }
+        return b._ID - a._ID; // If same year, use _ID to maintain order
+    });
+
     return data;
 }
 

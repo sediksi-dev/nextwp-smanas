@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import { Section } from "@/components/layout/section";
@@ -8,6 +7,7 @@ import { getAllAchievements } from "@/lib/wordpress";
 import PageHeading from "@/components/elements/page-heading";
 import type { Achievement } from "@/types/wordpress";
 import { SearchAndViewControls } from "./_components/search-view-controls";
+import { AchievementsView } from "./_components/achievements-view";
 
 const SCOPE_LABELS: Record<string, string> = {
     nasional: "Nasional",
@@ -72,7 +72,9 @@ export default async function PrestasiPage({
     });
 
     const totalPages = Math.ceil(filtered.length / PER_PAGE);
-    const paginated = filtered.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
+    const displayItems = viewMode === "plain"
+        ? filtered
+        : filtered.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
 
     function filterHref(nextTahun: string, nextScope: string, nextPage = "1") {
         const params = new URLSearchParams();
@@ -176,101 +178,12 @@ export default async function PrestasiPage({
 
             {/* Results */}
             <Section py="sm">
-                {paginated.length > 0 ? (
-                    <>
-                        {/* Grid view */}
-                        {viewMode === "grid" && (
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                                {paginated.map((achievement, index) =>
-                                    achievement.image ? (
-                                        <div key={index} className="relative overflow-hidden rounded-xl group aspect-square">
-                                            <Image
-                                                src={achievement.image}
-                                                alt={achievement.title}
-                                                fill
-                                                sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                                                className="object-cover transition-transform duration-500 group-hover:scale-105"
-                                            />
-                                            <div className="absolute top-2 left-2 z-10">
-                                                <span className="inline-block px-2 py-0.5 rounded-full text-xs font-bold bg-site-accent text-foreground">
-                                                    {SCOPE_LABELS[achievement.scope] ?? achievement.scope}
-                                                </span>
-                                            </div>
-                                            <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
-                                                <span className="text-xs font-semibold tracking-wider uppercase text-white/70 mb-0.5">{achievement.year}</span>
-                                                <p className="text-sm font-semibold text-white leading-snug">{achievement.title}</p>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div key={index} className="rounded-xl border border-site-border bg-white p-4 flex flex-col justify-between aspect-square">
-                                            <span className="inline-block self-start px-2 py-0.5 rounded-full text-xs font-bold bg-site-accent text-foreground">
-                                                {SCOPE_LABELS[achievement.scope] ?? achievement.scope}
-                                            </span>
-                                            <p className="text-sm font-semibold text-site-foreground leading-snug flex-1 py-2">{achievement.title}</p>
-                                            <div className="text-xs text-site-muted space-y-0.5">
-                                                {achievement.awardee && <p>{achievement.awardee}</p>}
-                                                <p className="font-medium">{achievement.year}</p>
-                                            </div>
-                                        </div>
-                                    )
-                                )}
-                            </div>
-                        )}
-
-                        {/* List view */}
-                        {viewMode === "list" && (
-                            <div className="flex flex-col divide-y divide-site-border border border-site-border rounded-xl overflow-hidden">
-                                {paginated.map((achievement, index) => (
-                                    <div key={index} className="flex items-center gap-4 bg-white px-4 py-3 hover:bg-gray-50 transition-colors">
-                                        {achievement.image ? (
-                                            <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0">
-                                                <Image
-                                                    src={achievement.image}
-                                                    alt={achievement.title}
-                                                    fill
-                                                    sizes="64px"
-                                                    className="object-cover"
-                                                />
-                                            </div>
-                                        ) : (
-                                            <div className="w-16 h-16 rounded-lg bg-site-accent/20 shrink-0 flex items-center justify-center text-site-accent text-xl font-bold">
-                                                {String(achievement.year).slice(-2)}
-                                            </div>
-                                        )}
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-semibold text-site-foreground leading-snug line-clamp-2">{achievement.title}</p>
-                                            <div className="flex flex-wrap gap-2 mt-1 text-xs text-site-muted">
-                                                <span className="px-1.5 py-0.5 rounded bg-site-accent/20 text-foreground font-medium">
-                                                    {SCOPE_LABELS[achievement.scope] ?? achievement.scope}
-                                                </span>
-                                                {achievement.awardee && <span>{achievement.awardee}</span>}
-                                                {achievement.host && <span className="truncate">{achievement.host}</span>}
-                                            </div>
-                                        </div>
-                                        <span className="text-xs font-semibold text-site-muted shrink-0">{achievement.year}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        {/* Plain view */}
-                        {viewMode === "plain" && (
-                            <ol className="space-y-1 text-sm">
-                                {paginated.map((achievement, index) => (
-                                    <li key={index} className="flex gap-3 py-1 border-b border-site-border/50 last:border-0">
-                                        <span className="text-site-muted shrink-0 w-6 text-right">{(currentPage - 1) * PER_PAGE + index + 1}.</span>
-                                        <span className="flex-1">
-                                            {achievement.title}
-                                            {achievement.awardee && (
-                                                <span className="text-site-muted"> — {achievement.awardee}</span>
-                                            )}
-                                        </span>
-                                        <span className="text-site-muted shrink-0">{SCOPE_LABELS[achievement.scope] ?? achievement.scope}, {achievement.year}</span>
-                                    </li>
-                                ))}
-                            </ol>
-                        )}
-                    </>
+                {displayItems.length > 0 ? (
+                    <AchievementsView
+                        achievements={displayItems}
+                        viewMode={viewMode}
+                        startIndex={viewMode === "plain" ? 0 : (currentPage - 1) * PER_PAGE}
+                    />
                 ) : (
                     <div className="py-20 text-center">
                         <p className="text-muted-foreground text-sm">
@@ -288,8 +201,8 @@ export default async function PrestasiPage({
                 )}
             </Section>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
+            {/* Pagination — hidden in plain view */}
+            {totalPages > 1 && viewMode !== "plain" && (
                 <Section py="sm">
                     <div className="flex justify-center gap-2 flex-wrap">
                         {currentPage > 1 && (
