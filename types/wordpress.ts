@@ -6,10 +6,47 @@ export type WpPost = {
     id: number;
     slug: string;
     date: string;
+    date_gmt: string;
+    guid: WpRendered;
+    modified: string;
+    modified_gmt: string;
+    status: string;
+    type: string;
+    link: string;
     title: WpRendered;
-    excerpt?: WpRendered;
-    content?: WpRendered;
+    content: WpRendered & { protected: boolean };
+    excerpt: WpRendered & { protected: boolean };
+    author: number;
+    featured_media: number;
+    comment_status: string;
+    ping_status: string;
+    sticky: boolean;
+    template: string;
+    format: string;
+    meta: {
+        footnotes: string;
+    };
+    categories: number[];
+    tags: number[];
+    class_list: string[];
 };
+
+export type WpMediaItem = {
+    id: number;
+    date: string;
+    slug: string;
+    status: string;
+    type: string;
+    link: string;
+    title: WpRendered;
+    author: number;
+    description: WpRendered;
+    caption: WpRendered;
+    alt_text: string;
+    media_type: string;
+    mime_type: string;
+    source_url: string;
+}
 
 export type WpMedia = {
     id: number;
@@ -71,11 +108,35 @@ export type AchievementsSectionConfig = {
     achievements_section_eyebrow?: string;
 };
 
+export type ArticleCategory = {
+    id: number;
+    name: string;
+    slug: string;
+};
+
+export type ArticleGroup = {
+    title: string;
+    category: ArticleCategory;
+};
+
+export type ArticleSectionConfig = {
+    article_section_title: string;
+    article_section_description?: string;
+    article_section_eyebrow?: string;
+    article_group_title_1?: string;
+    article_group_category_1?: ArticleCategory;
+    article_group_title_2?: string;
+    article_group_category_2?: ArticleCategory;
+    article_group_title_3?: string;
+    article_group_category_3?: ArticleCategory;
+};
+
 export type SmanasSiteConfig = {
     site: WpSiteInfo;
     slider: SliderSettings;
     greetings: GreetingsSectionConfig;
     achievements: AchievementsSectionConfig;
+    articles: ArticleSectionConfig;
 }
 
 // ──── Achievements ────────────────────────────────────────────────────────────────

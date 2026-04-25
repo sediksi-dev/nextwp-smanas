@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { getMediaById } from "@/lib/wordpress";
 
 /** Inline SVG placeholder — no extra file needed */
 const IMAGE_PLACEHOLDER =
@@ -15,7 +16,7 @@ export type PostCardBaseProps = {
 };
 
 export type PostCardListProps = PostCardBaseProps & {
-    image?: string;
+    image_id?: number;
 };
 
 export type PostCardDateProps = PostCardBaseProps & {
@@ -27,16 +28,15 @@ export type PostCardDateProps = PostCardBaseProps & {
    Compact horizontal card: small thumbnail (optional) on the left,
    title + excerpt on the right. Perfect for sidebar-style lists.
 ──────────────────────────────────────────────────────────────── */
-export function PostCardList({
+export async function PostCardList({
     title,
     excerpt,
-    image,
+    image_id,
     href,
     date,
     category,
 }: PostCardListProps) {
-    const src = image || IMAGE_PLACEHOLDER;
-
+    const src = (await getMediaById(Number(image_id)))?.source_url || IMAGE_PLACEHOLDER;
     return (
         <Link href={href} className="flex gap-3 group">
             <div className="relative shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-site-bg">
@@ -58,7 +58,9 @@ export function PostCardList({
                 <p className="font-semibold text-foreground text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors">
                     {title}
                 </p>
-                <p className="text-xs text-muted-foreground line-clamp-1">{excerpt}</p>
+                <div className="text-xs text-muted-foreground line-clamp-1" dangerouslySetInnerHTML={{
+                    __html: excerpt
+                }}></div>
             </div>
         </Link>
     );
@@ -86,7 +88,9 @@ export function PostCardListPlain({
             <p className="font-semibold text-foreground text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors">
                 {title}
             </p>
-            <p className="text-xs text-muted-foreground line-clamp-2">{excerpt}</p>
+            <div className="text-xs text-muted-foreground line-clamp-2" dangerouslySetInnerHTML={{
+                __html: excerpt
+            }}></div>
         </Link>
     );
 }
@@ -141,7 +145,9 @@ export function PostCardDate({
                 <p className="font-semibold text-foreground text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors">
                     {title}
                 </p>
-                <p className="text-xs text-muted-foreground line-clamp-2">{excerpt}</p>
+                <div className="text-xs text-muted-foreground line-clamp-2" dangerouslySetInnerHTML={{
+                    __html: excerpt
+                }}></div>
             </div>
         </Link>
     );
@@ -151,14 +157,15 @@ export function PostCardDate({
    Medium-sized landscape card: image on the left (1/3 width),
    content on the right. For featured or wider list layouts.
 ──────────────────────────────────────────────────────────────── */
-export function PostCardHorizontal({
+export async function PostCardHorizontal({
     title,
     excerpt,
-    image,
+    image_id,
     href,
     date,
     category,
 }: PostCardListProps) {
+    const image = (await getMediaById(Number(image_id)))?.source_url || IMAGE_PLACEHOLDER;
     return (
         <Link
             href={href}
@@ -186,7 +193,9 @@ export function PostCardHorizontal({
                 <p className="font-semibold text-foreground text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors">
                     {title}
                 </p>
-                <p className="text-xs text-muted-foreground line-clamp-2">{excerpt}</p>
+                <div className="text-xs text-muted-foreground line-clamp-2" dangerouslySetInnerHTML={{
+                    __html: excerpt
+                }}></div>
             </div>
         </Link>
     );

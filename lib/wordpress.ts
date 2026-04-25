@@ -2,7 +2,7 @@ import { mockPosts } from "@/lib/mock/posts";
 import { mockTeachers } from "@/lib/mock/teachers";
 import { mockAchievements } from "@/lib/mock/achievements";
 import { mockGallery } from "@/lib/mock/gallery";
-import type { Achievement, AchievementScope, SmanasSiteConfig, WpPost } from "@/types/wordpress";
+import type { Achievement, AchievementScope, SmanasSiteConfig, WpMediaItem, WpPost } from "@/types/wordpress";
 
 const baseUrl = process.env.NEXT_PUBLIC_WP_URL;
 const REVALIDATE = Number(process.env.WP_REVALIDATE_SECONDS ?? 1800);
@@ -178,6 +178,15 @@ export async function getSiteConfig(): Promise<SmanasSiteConfig | null> {
     return wpFetch<SmanasSiteConfig>("config", "smanas/v1");
 }
 
+// ── Attachments ───────────────────────────────────────────────────────────────────
+
+export async function getMediaById(id: number) {
+    const data = await wpFetch<WpMediaItem>(`media/${id}`);
+    if (!data) {
+        return null;
+    }
+    return data;
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -187,9 +196,28 @@ function toWpPost(item: (typeof mockPosts)[number]): WpPost {
         slug: item.slug,
         date: item.date,
         title: { rendered: item.title },
-        excerpt: { rendered: item.excerpt },
-        content: { rendered: item.content },
+        excerpt: { rendered: item.excerpt, protected: false },
+        content: { rendered: item.content, protected: false },
+        date_gmt: "",
+        guid: { rendered: "" },
+        modified: "",
+        modified_gmt: "",
+        status: "publish",
+        type: "post",
+        link: "",
+        author: 0,
+        featured_media: 0,
+        comment_status: "open",
+        ping_status: "open",
+        sticky: false,
+        template: "",
+        format: "",
+        meta: {
+            footnotes: "",
+        },
+        categories: [],
+        tags: [],
+        class_list: [],
     } satisfies WpPost;
 }
-
 

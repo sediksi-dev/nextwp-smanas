@@ -50,7 +50,36 @@ export default async function Home() {
       achievements_section_eyebrow: config.achievements.achievements_section_eyebrow,
     }
     : undefined;
-  console.log("Achievements section config:", config);
+
+  // Configuration for Article Sections
+  const postsSectionConfig = config?.articles;
+  const postsSectionProps = postsSectionConfig
+    ? {
+      article_section_title: postsSectionConfig.article_section_title,
+      article_section_description: postsSectionConfig.article_section_description,
+      article_section_eyebrow: postsSectionConfig.article_section_eyebrow,
+      article_groups: {
+        ...(postsSectionConfig.article_group_category_1 && {
+          group1: {
+            title: postsSectionConfig.article_group_title_1,
+            category: postsSectionConfig.article_group_category_1,
+          }
+        }),
+        ...(postsSectionConfig.article_group_category_2 && {
+          group2: {
+            title: postsSectionConfig.article_group_title_2,
+            category: postsSectionConfig.article_group_category_2,
+          }
+        }),
+        ...(postsSectionConfig.article_group_category_3 && {
+          group3: {
+            title: postsSectionConfig.article_group_title_3,
+            category: postsSectionConfig.article_group_category_3,
+          }
+        }),
+      }
+    } : undefined;
+
 
   return (
     <PageWrap>
@@ -64,7 +93,7 @@ export default async function Home() {
       }))} />
       {sambutanProps && <SambutanSection {...sambutanProps} />}
       {achievementsProps && <PrestasiSection achievements={achievements} {...achievementsProps} />}
-      <PostsSection />
+      {postsSectionProps && <PostsSection {...postsSectionProps} />}
       <GaleriSection />
     </PageWrap>
   );
