@@ -8,7 +8,7 @@ type SectionSize = "container" | "wide" | "fullwidth";
  * fullwidth  – no max-width constraint, children render edge-to-edge
  */
 const innerClass: Record<Exclude<SectionSize, "fullwidth">, string> = {
-    container: "container",
+    container: "mx-auto w-full max-w-6xl",
     wide: "mx-auto w-full max-w-screen-2xl",
 };
 

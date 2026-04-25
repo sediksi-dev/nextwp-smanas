@@ -32,10 +32,14 @@ function decodeXmlEntities(str: string): string {
 /**
  * Fetches the latest videos from the school YouTube channel via public RSS feed.
  * Results are cached and revalidated every hour via Next.js fetch cache.
+ * @param limit   Number of videos to return (default 6)
+ * @param channelId  Override the default channel ID (configured in app/page.tsx)
  */
-export async function getYoutubeVideos(limit = 6): Promise<YoutubeVideo[]> {
+export async function getYoutubeVideos(limit = 6, channelId?: string): Promise<YoutubeVideo[]> {
+    const id = channelId ?? CHANNEL_ID;
+    const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${id}`;
     try {
-        const res = await fetch(RSS_URL, {
+        const res = await fetch(rssUrl, {
             next: { revalidate: 3600 },
         });
         if (!res.ok) return [];

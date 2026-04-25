@@ -7,6 +7,11 @@ import { GaleriSection } from "@/components/sections/galeri-section";
 import { YoutubeSection } from "@/components/sections/youtube-section";
 import { getAchievementsWithImage, getSiteConfig } from "@/lib/wordpress";
 
+// ── YouTube channel config ───────────────────────────────────────────
+// Edit these two constants to point to a different channel.
+const YOUTUBE_CHANNEL_ID = "UCNGkr7r-39mCt897G7HB2nA";
+const YOUTUBE_CHANNEL_URL = "https://www.youtube.com/@smanasionalmalang910/videos";
+// ────────────────────────────────────────────────────────────────────
 
 export default async function Home() {
   const config = await getSiteConfig();
@@ -95,8 +100,8 @@ export default async function Home() {
       {sambutanProps && <SambutanSection {...sambutanProps} />}
       {achievementsProps && <PrestasiSection achievements={achievements} {...achievementsProps} />}
       {postsSectionProps && <PostsSection {...postsSectionProps} />}
-      <YoutubeSection />
       <GaleriSection />
+      <YoutubeSection channelId={YOUTUBE_CHANNEL_ID} channelUrl={YOUTUBE_CHANNEL_URL} />
     </PageWrap>
   );
 }
