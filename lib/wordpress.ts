@@ -2,18 +2,29 @@ import { mockPosts } from "@/lib/mock/posts";
 import { mockTeachers } from "@/lib/mock/teachers";
 import { mockAchievements } from "@/lib/mock/achievements";
 import { mockGallery } from "@/lib/mock/gallery";
-import type { WpPost } from "@/types/wordpress";
+import type { SmanasSiteConfig, WpPost } from "@/types/wordpress";
 
 const baseUrl = process.env.NEXT_PUBLIC_WP_URL;
 const REVALIDATE = Number(process.env.WP_REVALIDATE_SECONDS ?? 1800);
+const WP_USERNAME = process.env.WP_APP_USERNAME;
+const WP_PASSWORD = process.env.WP_APP_PASSWORD;
 
-async function wpFetch<T>(path: string): Promise<T | null> {
+async function wpFetch<T>(path: string, namespace: string = "wp/v2"): Promise<T | null> {
     if (!baseUrl) return null;
 
     try {
+        const headers: HeadersInit = {};
+        if (WP_USERNAME && WP_PASSWORD) {
+            const auth = Buffer.from(`${WP_USERNAME}:${WP_PASSWORD}`).toString("base64");
+            headers["Authorization"] = `Basic ${auth}`;
+        }
+
         const res = await fetch(
-            `${baseUrl.replace(/\/$/,"")}/wp-json/wp/v2/${path}`,
-            { next: { revalidate: REVALIDATE } },
+            `${baseUrl.replace(/\/$/, "")}/wp-json/${namespace}/${path}`,
+            {
+                headers,
+                next: { revalidate: REVALIDATE },
+            },
         );
         if (!res.ok) return null;
         return (await res.json()) as T;
@@ -72,7 +83,7 @@ export async function getPostBySlug(slug: string) {
 // ── Teachers / Staff ─────────────────────────────────────────────────────────
 
 export async function getTeachers() {
-    const data = await wpFetch<Array<{ slug: string; [key: string]: unknown }>>(
+    const data = await wpFetch<Array<{ slug: string;[key: string]: unknown }>>(
         "guru?per_page=100",
     );
     if (!data) {
@@ -82,7 +93,7 @@ export async function getTeachers() {
 }
 
 export async function getStaff() {
-    const data = await wpFetch<Array<{ slug: string; [key: string]: unknown }>>(
+    const data = await wpFetch<Array<{ slug: string;[key: string]: unknown }>>(
         "staf?per_page=100",
     );
     if (!data) {
@@ -126,6 +137,13 @@ export async function getGallery(type?: "Foto" | "Video") {
     return data;
 }
 
+// ── Site Config ───────────────────────────────────────────────────────────────
+
+export async function getSiteConfig(): Promise<SmanasSiteConfig | null> {
+    return wpFetch<SmanasSiteConfig>("config", "smanas/v1");
+}
+
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function toWpPost(item: (typeof mockPosts)[number]): WpPost {
@@ -138,3 +156,5 @@ function toWpPost(item: (typeof mockPosts)[number]): WpPost {
         content: { rendered: item.content },
     } satisfies WpPost;
 }
+
+

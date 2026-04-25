@@ -1,9 +1,17 @@
 import { Section } from "@/components/layout/section";
 import Image from "next/image";
-import { mockPrincipalMessage } from "@/lib/mock-data";
+import { AspectRatio } from "../ui/aspect-ratio";
 
-export function SambutanSection() {
-    const paragraphs = mockPrincipalMessage.message.split("\n\n").filter(Boolean);
+
+interface SambutanSectionProps {
+    name: string;
+    role: string;
+    photo: string;
+    message: string;
+}
+
+export function SambutanSection(props: SambutanSectionProps) {
+    const paragraphs = props.message.split("\n\n").filter(Boolean);
 
     return (
         <Section>
@@ -16,25 +24,23 @@ export function SambutanSection() {
                 {/* Left: foto + identitas */}
                 <div className="flex flex-col items-center text-center gap-3">
                     <div className="w-full overflow-hidden rounded-xl">
-                        <Image
-                            src={mockPrincipalMessage.photo}
-                            alt={mockPrincipalMessage.name}
-                            width={220}
-                            height={270}
-                            className="object-cover w-full"
-                        />
+                        <AspectRatio ratio={3/4}>
+                            <Image
+                                src={props.photo}
+                                alt={`Foto ${props.name}`}
+                                fill
+                                className="object-cover"
+                            />
+                        </AspectRatio>
                     </div>
-                    <p className="font-bold text-primary text-sm">{mockPrincipalMessage.name}</p>
-                    <p className="text-muted-foreground text-xs">{mockPrincipalMessage.role}.</p>
+                    <p className="font-bold text-primary text-sm">{props.name}</p>
+                    <p className="text-muted-foreground text-xs">{props.role}.</p>
                 </div>
 
                 {/* Right: pesan */}
-                <div className="flex flex-col gap-4">
-                    {paragraphs.map((para, i) => (
-                        <p key={i} className="text-sm md:text-base text-foreground/80 leading-relaxed">
-                            {para}
-                        </p>
-                    ))}
+                <div className="flex flex-col gap-4 text-sm md:text-base text-foreground/80 leading-relaxed" dangerouslySetInnerHTML={{
+                    __html: props.message
+                }}>
                 </div>
             </div>
         </Section>

@@ -4,12 +4,50 @@ import { SambutanSection } from "@/components/sections/sambutan-section";
 import { PrestasiSection } from "@/components/sections/prestasi-section";
 import { PostsSection } from "@/components/sections/posts-section";
 import { GaleriSection } from "@/components/sections/galeri-section";
+import { getSiteConfig } from "@/lib/wordpress";
 
-export default function Home() {
+
+
+export default async function Home() {
+  const config = await getSiteConfig();
+
+  // Configuration for Hero Section (Slider)
+  const sliderItems = config?.slider.items || [];
+  if (sliderItems.length === 0) {
+    sliderItems.push({
+      title: "Selamat Datang di SMANAS",
+      subtitle: "Sekolah Menengah Atas Nasional Malang",
+      description: "Membangun Generasi Unggul dengan Pendidikan Berkualitas",
+      image: "/default-slider.jpg",
+      button_text_1: "Jelajahi Sekolah",
+      button_url_1: "#",
+      button_text_2: "Hubungi Kami",
+      button_url_2: "#",
+    });
+  }
+
+  // Configuration for Sambutan Section (Greetings)
+  const greetingsConfig = config?.greetings;
+  const sambutanProps = greetingsConfig
+    ? {
+      name: greetingsConfig.greetings_title,
+      role: greetingsConfig.greetings_subtitle,
+      photo: greetingsConfig.greetings_photo.url,
+      message: greetingsConfig.greetings_description,
+    }
+    : undefined;
+
   return (
     <PageWrap>
-      <HeroSection />
-      <SambutanSection />
+      <HeroSection sliderItems={sliderItems.map(item => ({
+        title: item.title,
+        subtitle: item.subtitle !== "" ? item.subtitle : undefined,
+        description: item.description !== "" ? item.description : undefined,
+        backgroundImage: item.image,
+        cta1: item.button_text_1 && item.button_url_1 ? { text: item.button_text_1, href: item.button_url_1 } : undefined,
+        cta2: item.button_text_2 && item.button_url_2 ? { text: item.button_text_2, href: item.button_url_2 } : undefined,
+      }))} />
+      {sambutanProps && <SambutanSection {...sambutanProps} />}
       <PrestasiSection />
       <PostsSection />
       <GaleriSection />

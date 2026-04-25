@@ -12,12 +12,23 @@ import { Section } from "@/components/layout/section";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
-import { mockHeroSlides } from "@/lib/mock-data";
 
-export function HeroSection() {
+export interface HeroSectionProps {
+    sliderItems: {
+        title: string;
+        subtitle: string | undefined;
+        description: string | undefined;
+        backgroundImage: string;
+        cta1?: { text: string; href: string };
+        cta2?: { text: string; href: string };
+    }[];
+}
+
+
+export function HeroSection({ sliderItems }: HeroSectionProps) {
     const [api, setApi] = useState<CarouselApi>();
     const [current, setCurrent] = useState(0);
-    const count = mockHeroSlides.length;
+    const count = sliderItems.length;
 
     useEffect(() => {
         if (!api) return;
@@ -41,7 +52,7 @@ export function HeroSection() {
                     className="w-full"
                 >
                     <CarouselContent className="ml-0">
-                        {mockHeroSlides.map((slide, index) => (
+                        {sliderItems.map((slide, index) => (
                             <CarouselItem key={index} className="pl-0">
                                 <div className="relative h-105 md:h-140 lg:h-160 rounded-2xl overflow-hidden">
                                     <Image
@@ -57,7 +68,7 @@ export function HeroSection() {
 
                                     {/* Content */}
                                     <div className="absolute inset-0 z-10 flex flex-col justify-end pb-12 md:pb-16 px-6 md:px-12 lg:px-16">
-                                        <div className="max-w-2xl">
+                                        <div className="max-w-4xl">
                                             {slide.subtitle && (
                                                 <div className="flex items-center gap-2 mb-3">
                                                     <span className="block w-6 h-0.5 bg-site-accent" />
@@ -76,7 +87,7 @@ export function HeroSection() {
                                             )}
                                             <div className="flex flex-wrap gap-3 mt-7">
                                                 {slide.cta1 && (
-                                                    <Button asChild variant="accent" size="lg">
+                                                    <Button asChild variant="accent">
                                                         <Link href={slide.cta1.href}>{slide.cta1.text}</Link>
                                                     </Button>
                                                 )}
@@ -84,7 +95,7 @@ export function HeroSection() {
                                                     <Button
                                                         asChild
                                                         variant="outline"
-                                                        size="lg"
+
                                                         className="border-white/40 text-white hover:bg-white/10 hover:text-white"
                                                     >
                                                         <Link href={slide.cta2.href}>{slide.cta2.text}</Link>
