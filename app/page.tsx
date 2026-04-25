@@ -4,6 +4,7 @@ import { SambutanSection } from "@/components/sections/sambutan-section";
 import { PrestasiSection } from "@/components/sections/prestasi-section";
 import { PostsSection } from "@/components/sections/posts-section";
 import { GaleriSection } from "@/components/sections/galeri-section";
+import { YoutubeSection } from "@/components/sections/youtube-section";
 import { getAchievementsWithImage, getSiteConfig } from "@/lib/wordpress";
 
 
@@ -94,6 +95,7 @@ export default async function Home() {
       {sambutanProps && <SambutanSection {...sambutanProps} />}
       {achievementsProps && <PrestasiSection achievements={achievements} {...achievementsProps} />}
       {postsSectionProps && <PostsSection {...postsSectionProps} />}
+      <YoutubeSection />
       <GaleriSection />
     </PageWrap>
   );
