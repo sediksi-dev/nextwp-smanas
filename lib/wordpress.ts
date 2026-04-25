@@ -2,7 +2,7 @@ import { mockPosts } from "@/lib/mock/posts";
 import { mockTeachers } from "@/lib/mock/teachers";
 import { mockAchievements } from "@/lib/mock/achievements";
 import { mockGallery } from "@/lib/mock/gallery";
-import type { SmanasSiteConfig, WpPost } from "@/types/wordpress";
+import type { Achievement, AchievementScope, SmanasSiteConfig, WpPost } from "@/types/wordpress";
 
 const baseUrl = process.env.NEXT_PUBLIC_WP_URL;
 const REVALIDATE = Number(process.env.WP_REVALIDATE_SECONDS ?? 1800);
@@ -104,20 +104,46 @@ export async function getStaff() {
 
 // ── Achievements ─────────────────────────────────────────────────────────────
 
-export async function getAchievements(year?: number, category?: string) {
-    const params = new URLSearchParams({ per_page: "100" });
-    if (year) params.set("year", String(year));
-    if (category) params.set("kategori", category);
+export async function getAchievementsWithImage() {
+    const data = await wpFetch<Achievement[]>("prestasi-with-image", "smanas/v1");
+    if (!data || data.length === 0) {
+        const fallback = mockAchievements.filter((a) => a.image).map((a) => ({
+            _ID: Number(a._ID),
+            title: a.title,
+            scope: a.scope,
+            year: Number(a.year),
+            awardee: a.awardee,
+            image: a.image!,
+            host: a.host,
+        })) as Achievement[]; // Only return achievements that have an image for the PrestasiSection
+        return fallback;
+    }
+    return data;
+}
 
-    const data = await wpFetch<Array<{ [key: string]: unknown }>>(
-        `prestasi?${params.toString()}`,
-    );
+export async function getAllAchievements(year?: number, scope?: AchievementScope, page?: number, per_page?: number) {
+    const params = new URLSearchParams();
+    if (year) params.set("year", String(year));
+    if (scope) params.set("scope", scope);
+    if (page) params.set("page", String(page));
+    if (per_page) params.set("per_page", String(per_page));
+
+    const query = params.toString();
+    const endpoint = query ? `awards?${query}` : "awards";
+
+    const data = await wpFetch<Array<Achievement>>(endpoint, "jet-cct");
     if (!data) {
-        return mockAchievements.filter((a) => {
-            const yearMatch = !year || a.year === year;
-            const catMatch = !category || a.category === category;
-            return yearMatch && catMatch;
-        });
+        // Filter mock data based on parameters
+        let filtered = mockAchievements;
+        if (year) filtered = filtered.filter(a => String(a.year) === String(year));
+        if (scope) filtered = filtered.filter(a => a.scope === scope);
+        if (page && per_page) {
+            const start = (page - 1) * per_page;
+            filtered = filtered.slice(start, start + per_page);
+        } else if (per_page) {
+            filtered = filtered.slice(0, per_page);
+        }
+        return filtered;
     }
     return data;
 }

@@ -4,12 +4,13 @@ import { SambutanSection } from "@/components/sections/sambutan-section";
 import { PrestasiSection } from "@/components/sections/prestasi-section";
 import { PostsSection } from "@/components/sections/posts-section";
 import { GaleriSection } from "@/components/sections/galeri-section";
-import { getSiteConfig } from "@/lib/wordpress";
+import { getAchievementsWithImage, getSiteConfig } from "@/lib/wordpress";
 
 
 
 export default async function Home() {
   const config = await getSiteConfig();
+  const achievements = await getAchievementsWithImage();
 
   // Configuration for Hero Section (Slider)
   const sliderItems = config?.slider.items || [];
@@ -48,7 +49,7 @@ export default async function Home() {
         cta2: item.button_text_2 && item.button_url_2 ? { text: item.button_text_2, href: item.button_url_2 } : undefined,
       }))} />
       {sambutanProps && <SambutanSection {...sambutanProps} />}
-      <PrestasiSection />
+      <PrestasiSection achievements={achievements ?? []} />
       <PostsSection />
       <GaleriSection />
     </PageWrap>

@@ -4,15 +4,13 @@ import { useState } from "react";
 import { Section } from "@/components/layout/section";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import { mockAchievements } from "@/lib/mock-data";
+import type { Achievement, AchievementScope } from "@/types/wordpress";
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-
-type Achievement = (typeof mockAchievements)[number];
 
 const SCOPE_LABELS: Record<string, string> = {
     kecamatan: "Kecamatan",
@@ -23,9 +21,7 @@ const SCOPE_LABELS: Record<string, string> = {
     lainnya: "Lainnya",
 };
 
-const scopes = Array.from(new Set(mockAchievements.map((a) => a.scope))).sort(
-    (a, b) => Object.keys(SCOPE_LABELS).indexOf(a) - Object.keys(SCOPE_LABELS).indexOf(b)
-);
+const scopes = ["nasional", "provinsi", "regional", "kecamatan", "lainnya"] as const;
 
 function AchievementDialog({ achievement, onClose }: { achievement: Achievement | null; onClose: () => void }) {
     return (
@@ -35,7 +31,7 @@ function AchievementDialog({ achievement, onClose }: { achievement: Achievement 
                     <>
                         <div className="w-full">
                             <Image
-                                src={achievement.image}
+                                src={achievement.image || ""}
                                 alt={achievement.title}
                                 width={448}
                                 height={0}
@@ -75,11 +71,11 @@ function AchievementDialog({ achievement, onClose }: { achievement: Achievement 
     );
 }
 
-export function PrestasiSection() {
-    const [activeScope, setActiveScope] = useState(scopes[0]);
+export function PrestasiSection({ achievements }: { achievements: Achievement[] }) {
+    const [activeScope, setActiveScope] = useState<AchievementScope>("regional");
     const [selected, setSelected] = useState<Achievement | null>(null);
 
-    const filtered = mockAchievements
+    const filtered = achievements
         .filter((a) => a.scope === activeScope)
         .slice(0, 8);
 
@@ -94,7 +90,7 @@ export function PrestasiSection() {
 
             {/* Scope filter */}
             <div className="flex flex-wrap justify-center gap-2 mb-8">
-                {scopes.map((scope) => (
+                {scopes.filter(scope => achievements.some(a => a.scope === scope)).map((scope) => (
                     <button
                         key={scope}
                         onClick={() => setActiveScope(scope)}
@@ -119,7 +115,7 @@ export function PrestasiSection() {
                         className="relative overflow-hidden rounded-xl group aspect-square text-left w-full"
                     >
                         <Image
-                            src={achievement.image}
+                            src={achievement.image || ""}
                             alt={achievement.title}
                             fill
                             sizes="(max-width: 768px) 50vw, 25vw"

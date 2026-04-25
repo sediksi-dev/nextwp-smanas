@@ -67,3 +67,17 @@ export type SmanasSiteConfig = {
     slider: SliderSettings;
     greetings: GreetingsSectionConfig;
 }
+
+// ──── Achievements ────────────────────────────────────────────────────────────────
+
+export type AchievementScope = "kecamatan" | "regional" | "provinsi" | "nasional" | "internasional" | "lainnya";
+
+export type Achievement = {
+    _ID: number;
+    title: string;
+    scope: AchievementScope;
+    year: number;
+    awardee?: string;
+    image?: string;
+    host?: string;
+};
