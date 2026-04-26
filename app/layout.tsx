@@ -3,6 +3,7 @@ import { Geist_Mono, Manrope, Public_Sans } from "next/font/google";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { schoolInfo } from "@/lib/config";
+import { GoogleAnalytics } from '@next/third-parties/google'
 import "./globals.css";
 
 const headlineFont = Manrope({
@@ -58,6 +59,7 @@ export default function RootLayout({
         {children}
         <SiteFooter />
       </body>
+      <GoogleAnalytics gaId="G-TK7JJ0C02M" />
     </html>
   );
 }
