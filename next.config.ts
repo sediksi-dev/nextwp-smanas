@@ -35,7 +35,26 @@ const nextConfig: NextConfig = {
   },
   images: {
     remotePatterns: baseRemotePatterns,
-  }
+  },
+  redirects() {
+    return [
+      {
+        source: '/wp-admin',
+        destination: 'https://dash.smanasionalmalang.sch.id/wp-admin',
+        permanent: false,
+      },
+      {
+        source: '/admin',
+        destination: 'https://dash.smanasionalmalang.sch.id/wp-admin',
+        permanent: false,
+      },
+      {
+        source: '/login',
+        destination: 'https://dash.smanasionalmalang.sch.id/wp-admin',
+        permanent: false,
+      },
+    ]
+  },
 };
 
 export default nextConfig;
