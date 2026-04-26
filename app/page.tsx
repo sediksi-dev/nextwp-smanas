@@ -6,6 +6,7 @@ import { PostsSection } from "@/components/sections/posts-section";
 import { GaleriSection } from "@/components/sections/galeri-section";
 import { YoutubeSection } from "@/components/sections/youtube-section";
 import { getAchievementsWithImage, getSiteConfig } from "@/lib/wordpress";
+import { SlideUp } from "@/components/motion/slide-up";
 
 // ── YouTube channel config ───────────────────────────────────────────
 // Edit these two constants to point to a different channel.
@@ -123,11 +124,11 @@ export default async function Home() {
         cta1: item.button_text_1 && item.button_url_1 ? { text: item.button_text_1, href: item.button_url_1 } : undefined,
         cta2: item.button_text_2 && item.button_url_2 ? { text: item.button_text_2, href: item.button_url_2 } : undefined,
       }))} />
-      {sambutanProps && <SambutanSection {...sambutanProps} />}
-      {achievementsProps && <PrestasiSection achievements={achievements} {...achievementsProps} />}
-      {postsSectionProps && <PostsSection {...postsSectionProps} />}
-      {galeriSectionProps && <GaleriSection {...galeriSectionProps} />}
-      {youtubeSectionProps && <YoutubeSection {...youtubeSectionProps} />}
+      {sambutanProps && <SlideUp><SambutanSection {...sambutanProps} /></SlideUp>}
+      {achievementsProps && <SlideUp><PrestasiSection achievements={achievements} {...achievementsProps} /></SlideUp>}
+      {postsSectionProps && <SlideUp><PostsSection {...postsSectionProps} /></SlideUp>}
+      {galeriSectionProps && <SlideUp><GaleriSection {...galeriSectionProps} /></SlideUp>}
+      {youtubeSectionProps && <SlideUp><YoutubeSection {...youtubeSectionProps} /></SlideUp>}
     </PageWrap>
   );
 }

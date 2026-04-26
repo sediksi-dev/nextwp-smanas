@@ -12,6 +12,26 @@ import { Section } from "@/components/layout/section";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
+import { motion } from "framer-motion";
+
+const heroContainerVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.25,
+    },
+  },
+};
+
+const heroItemVariants = {
+  hidden: { opacity: 0, y: 22 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
+  },
+};
 
 export interface HeroSectionProps {
     sliderItems: {
@@ -68,24 +88,29 @@ export function HeroSection({ sliderItems }: HeroSectionProps) {
 
                                     {/* Content */}
                                     <div className="absolute inset-0 z-10 flex flex-col justify-end pb-12 md:pb-16 px-6 md:px-12 lg:px-16">
-                                        <div className="max-w-4xl">
+                                        <motion.div
+                                            className="max-w-4xl"
+                                            variants={heroContainerVariants}
+                                            initial="hidden"
+                                            animate="visible"
+                                        >
                                             {slide.subtitle && (
-                                                <div className="flex items-center gap-2 mb-3">
+                                                <motion.div variants={heroItemVariants} className="flex items-center gap-2 mb-3">
                                                     <span className="block w-6 h-0.5 bg-site-accent" />
                                                     <p className="text-xs font-bold tracking-widest uppercase text-site-accent">
                                                         {slide.subtitle}
                                                     </p>
-                                                </div>
+                                                </motion.div>
                                             )}
-                                            <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight text-white">
+                                            <motion.h1 variants={heroItemVariants} className="text-3xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight text-white">
                                                 {slide.title}
-                                            </h1>
+                                            </motion.h1>
                                             {slide.description && (
-                                                <p className="mt-4 text-sm md:text-base leading-relaxed text-white/75 max-w-lg">
+                                                <motion.p variants={heroItemVariants} className="mt-4 text-sm md:text-base leading-relaxed text-white/75 max-w-lg">
                                                     {slide.description}
-                                                </p>
+                                                </motion.p>
                                             )}
-                                            <div className="flex flex-wrap gap-3 mt-7">
+                                            <motion.div variants={heroItemVariants} className="flex flex-wrap gap-3 mt-7">
                                                 {slide.cta1 && (
                                                     <Button asChild variant="accent">
                                                         <Link href={slide.cta1.href}>{slide.cta1.text}</Link>
@@ -101,8 +126,8 @@ export function HeroSection({ sliderItems }: HeroSectionProps) {
                                                         <Link href={slide.cta2.href}>{slide.cta2.text}</Link>
                                                     </Button>
                                                 )}
-                                            </div>
-                                        </div>
+                                            </motion.div>
+                                        </motion.div>
                                     </div>
                                 </div>
                             </CarouselItem>
