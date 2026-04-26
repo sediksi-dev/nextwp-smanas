@@ -29,7 +29,7 @@ export default function StrukturOrganisasiPage() {
                 description="Susunan kepemimpinan dan tanggung jawab tiap bidang di SMA Nasional Malang."
             />
 
-            <Section>
+            <Section py="sm">
                 {/* Kepala Sekolah — dominant full-width gradient block */}
                 <div
                     className="rounded-2xl px-8 py-10 md:px-14 md:py-12 flex flex-col md:flex-row items-center md:items-end gap-4 md:gap-10"
