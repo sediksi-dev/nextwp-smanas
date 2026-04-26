@@ -454,6 +454,16 @@ export async function getContactConfig(): Promise<SmanasContactConfig | null> {
     return wpFetch<SmanasContactConfig>("contact", "smanas/v1");
 }
 
+// ── Pages (post_type=page) ─────────────────────────────────────────────────────────────────────
+
+export async function getPageBySlug(slug: string): Promise<WpPost | null> {
+    const data = await wpFetch<WpPost[]>(
+        `pages?slug=${encodeURIComponent(slug)}&per_page=1`,
+    );
+    if (data === null || data.length === 0) return null;
+    return data[0];
+}
+
 // ── Attachments ────────────────────────────────────────────────────────────────────────────────
 
 export async function getMediaById(id: number) {
