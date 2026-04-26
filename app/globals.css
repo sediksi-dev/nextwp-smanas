@@ -1,4 +1,7 @@
 @import "tailwindcss";
+/* globals.css */
+@import "@wordpress/block-library/build-style/style.css";
+@import "@wordpress/block-library/build-style/theme.css";
 
 /* ── Project brand tokens ─────────────────────────── */
 :root {
