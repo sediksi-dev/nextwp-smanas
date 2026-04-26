@@ -163,3 +163,40 @@ export type Achievement = {
     image?: string;
     host?: string;
 };
+
+// ──── Gallery (jet-cct) ──────────────────────────────────────────────────────────
+
+export type WpGalleryItem = {
+    _ID: string;
+    gallery_title: string;
+    gallery_description: string;
+    gallery_photos: string;
+    cct_status: string;
+    cct_author_id: string;
+    cct_created: string;
+    cct_modified: string;
+    cct_slug: string;
+};
+
+// ──── Teachers (jet-cct) ─────────────────────────────────────────────────────────
+
+export type TeacherCategory = "kepsek" | "wakasek" | "guru" | "staf";
+
+export type WpTeacher = {
+    _ID: string;
+    name: string;
+    role: string;
+    category: TeacherCategory;
+    motto: string;
+    birthplace: string;
+    birthdate: string;
+    email: string;
+    photo: string;
+    nuptk: string;
+    cct_status: string;
+    cct_author_id: string;
+    cct_created: string;
+    cct_modified: string;
+    cct_slug: string;
+};
+

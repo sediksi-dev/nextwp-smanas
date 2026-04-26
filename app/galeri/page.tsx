@@ -1,46 +1,62 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { getGalleryItemsPaginated } from "@/lib/wordpress";
 import { PageWrap } from "@/components/layout/page-wrap";
+import { Section } from "@/components/layout/section";
 import PageHeading from "@/components/elements/page-heading";
+import { Button } from "@/components/ui/button";
+import { GalleryGrid } from "./_components/gallery-grid";
+
+export const revalidate = 3600;
 
 export const metadata = {
-    title: "Galeri",
-    description: "Dokumentasi foto dan video kegiatan SMA Nasional Malang.",
+    title: "Galeri Foto",
+    description: "Kumpulan foto dokumentasi kegiatan SMA Nasional Malang.",
 };
 
-export default function GaleriPage() {
+export default async function GaleriPage({
+    searchParams,
+}: {
+    searchParams: Promise<{ page?: string }>;
+}) {
+    const { page: pageStr } = await searchParams;
+    const page = Math.max(1, Number(pageStr ?? 1));
+    const { items, totalPages } = await getGalleryItemsPaginated(page, 12);
+
     return (
         <PageWrap breadcrumb={[{ label: "Beranda", href: "/" }, { label: "Galeri" }]}>
             <PageHeading
-                title="Galeri"
+                title="Galeri Foto"
                 subtitle="Dokumentasi"
-                description="Kumpulan foto dan video dokumentasi kegiatan SMA Nasional Malang."
+                description="Kumpulan foto dokumentasi kegiatan SMA Nasional Malang."
             />
-            <section className="container grid-3">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Galeri Foto</CardTitle>
-                        <CardDescription>Kumpulan dokumentasi kegiatan sekolah.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Button asChild variant="secondary" size="sm">
-                            <Link href="/galeri/foto">Buka Foto</Link>
-                        </Button>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Galeri Video</CardTitle>
-                        <CardDescription>Video profil dan kegiatan dengan embed YouTube.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Button asChild variant="secondary" size="sm">
-                            <Link href="/galeri/video">Buka Video</Link>
-                        </Button>
-                    </CardContent>
-                </Card>
-            </section>
+            <Section py="none" className="pb-12">
+                <GalleryGrid items={items} />
+
+                {totalPages > 1 && (
+                    <div className="mt-10 flex items-center justify-center gap-3">
+                        {page > 1 && (
+                            <Button asChild variant="outline" size="sm">
+                                <Link href={`/galeri?page=${page - 1}`}>
+                                    <ChevronLeft className="h-4 w-4 mr-1" />
+                                    Sebelumnya
+                                </Link>
+                            </Button>
+                        )}
+                        <span className="text-sm text-muted-foreground px-2">
+                            Halaman {page} dari {totalPages}
+                        </span>
+                        {page < totalPages && (
+                            <Button asChild variant="outline" size="sm">
+                                <Link href={`/galeri?page=${page + 1}`}>
+                                    Selanjutnya
+                                    <ChevronRight className="h-4 w-4 ml-1" />
+                                </Link>
+                            </Button>
+                        )}
+                    </div>
+                )}
+            </Section>
         </PageWrap>
     );
 }
