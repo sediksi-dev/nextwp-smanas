@@ -142,12 +142,28 @@ export type ArticleSectionConfig = {
     article_group_category_3?: ArticleCategory;
 };
 
+export type GallerySectionConfig = {
+    gallery_section_title: string;
+    gallery_section_description?: string;
+    gallery_section_eyebrow?: string;
+};
+
+export type YoutubeSectionConfig = {
+    youtube_section_title: string;
+    youtube_section_description?: string;
+    youtube_section_eyebrow?: string;
+    youtube_channel_id: string;
+    youtube_channel_url: string;
+};
+
 export type SmanasSiteConfig = {
     site: WpSiteInfo;
     slider: SliderSettings;
     greetings: GreetingsSectionConfig;
     achievements: AchievementsSectionConfig;
     articles: ArticleSectionConfig;
+    gallery: GallerySectionConfig;
+    youtube: YoutubeSectionConfig;
 }
 
 // ──── Achievements ────────────────────────────────────────────────────────────────

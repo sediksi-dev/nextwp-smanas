@@ -13,13 +13,17 @@ const YtIcon = () => (
 );
 
 interface YoutubeSectionProps {
-    /** YouTube channel ID — change in app/page.tsx */
-    channelId?: string;
-    /** Full URL shown on the "Lihat Semua Video" button — change in app/page.tsx */
-    channelUrl?: string;
+    title: string;
+    description?: string;
+    eyebrow?: string;
+    channelId: string;
+    channelUrl: string;
 }
 
 export async function YoutubeSection({
+    title,
+    description,
+    eyebrow,
     channelId,
     channelUrl = "https://www.youtube.com/@smanasionalmalang910/videos",
 }: YoutubeSectionProps) {
@@ -31,9 +35,9 @@ export async function YoutubeSection({
 
             <SectionTitle
                 variant="centered-bar"
-                eyebrow="Channel YouTube"
-                title="Video Terbaru SMANAS"
-                description="Saksikan berbagai dokumentasi kegiatan, prestasi, dan momen terbaik SMA Nasional Malang."
+                eyebrow={eyebrow}
+                title={title}
+                description={description}
             />
 
             {/* ── Playlist ─────────────────────────────────── */}

@@ -86,6 +86,32 @@ export default async function Home() {
       }
     } : undefined;
 
+  const galleryConfig = config?.gallery;
+  const galeriSectionProps = galleryConfig
+    ? {
+      title: galleryConfig.gallery_section_title,
+      description: galleryConfig.gallery_section_description,
+      eyebrow: galleryConfig.gallery_section_eyebrow,
+    }
+    : undefined;
+
+  const youtubeConfig = config?.youtube;
+  // YouTube section will be rendered regardless of config, but we can still pass title/description from config if available
+  const youtubeSectionProps = youtubeConfig ? {
+    title: youtubeConfig.youtube_section_title,
+    description: youtubeConfig.youtube_section_description,
+    eyebrow: youtubeConfig.youtube_section_eyebrow,
+    channelId: youtubeConfig.youtube_channel_id || YOUTUBE_CHANNEL_ID,
+    channelUrl: youtubeConfig.youtube_channel_url || YOUTUBE_CHANNEL_URL,
+  }
+    : {
+      title: "Video Terbaru SMANAS",
+      description: "Saksikan berbagai dokumentasi kegiatan, prestasi, dan momen terbaik SMA Nasional Malang.",
+      eyebrow: "Channel YouTube",
+      channelId: YOUTUBE_CHANNEL_ID,
+      channelUrl: YOUTUBE_CHANNEL_URL,
+    };
+
 
   return (
     <PageWrap>
@@ -100,8 +126,8 @@ export default async function Home() {
       {sambutanProps && <SambutanSection {...sambutanProps} />}
       {achievementsProps && <PrestasiSection achievements={achievements} {...achievementsProps} />}
       {postsSectionProps && <PostsSection {...postsSectionProps} />}
-      <GaleriSection />
-      <YoutubeSection channelId={YOUTUBE_CHANNEL_ID} channelUrl={YOUTUBE_CHANNEL_URL} />
+      {galeriSectionProps && <GaleriSection {...galeriSectionProps} />}
+      {youtubeSectionProps && <YoutubeSection {...youtubeSectionProps} />}
     </PageWrap>
   );
 }
