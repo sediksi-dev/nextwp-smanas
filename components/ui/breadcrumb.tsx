@@ -10,16 +10,21 @@ type BreadcrumbItemData = { label: string; href?: string };
 
 const Breadcrumb = ({ items }: { items: BreadcrumbItemData[] }) => (
     <nav aria-label="breadcrumb">
-        <ol className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground sm:gap-2.5">
+        <ol className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground sm:gap-2.5 min-w-0">
             {items.map((item, i) => (
                 <React.Fragment key={i}>
                     <li className="inline-flex items-center gap-1.5">
                         {item.href ? (
-                            <a href={item.href} className="transition-colors hover:text-foreground">
+                            <a href={item.href} className="transition-colors hover:text-foreground shrink-0">
                                 {item.label}
                             </a>
                         ) : (
-                            <span className="font-medium text-foreground">{item.label}</span>
+                            <span
+                                className="font-medium text-foreground truncate max-w-[9rem] sm:max-w-xs md:max-w-none"
+                                title={item.label}
+                            >
+                                {item.label}
+                            </span>
                         )}
                     </li>
                     {i < items.length - 1 && (

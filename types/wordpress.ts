@@ -42,6 +42,16 @@ export type WpCategory = {
     parent: number;
 };
 
+export type WpTag = {
+    id: number;
+    count: number;
+    description: string;
+    link: string;
+    name: string;
+    slug: string;
+    taxonomy: string;
+};
+
 export type WpMediaItem = {
     id: number;
     date: string;

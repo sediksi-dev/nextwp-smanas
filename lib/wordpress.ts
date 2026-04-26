@@ -12,6 +12,7 @@ import type {
     WpGalleryItem,
     WpMediaItem,
     WpPost,
+    WpTag,
     WpTeacher,
 } from "@/types/wordpress";
 
@@ -447,6 +448,48 @@ export async function getMediaById(id: number) {
         return null;
     }
     return data;
+}
+
+// ── Tags ────────────────────────────────────────────────────────────────────────────────────
+
+export async function getTagsByIds(ids: number[]): Promise<WpTag[]> {
+    if (ids.length === 0) return [];
+    const data = await wpFetch<WpTag[]>(`tags?include=${ids.join(",")}&per_page=100`);
+    return data ?? [];
+}
+
+// ── Adjacent posts ────────────────────────────────────────────────────────────────────────────
+
+/** Get the next newer post relative to the given ISO date string */
+export async function getNextPost(date: string): Promise<WpPost | null> {
+    const data = await wpFetch<WpPost[]>(
+        `posts?after=${encodeURIComponent(date)}&per_page=1&order=asc`,
+    );
+    if (data === null || data.length === 0) {
+        const sorted = [...mockPosts].sort(
+            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+        );
+        const idx = sorted.findIndex((p) => p.date === date);
+        if (idx === -1 || idx === sorted.length - 1) return null;
+        return toWpPost(sorted[idx + 1]);
+    }
+    return data[0];
+}
+
+/** Get the previous older post relative to the given ISO date string */
+export async function getPrevPost(date: string): Promise<WpPost | null> {
+    const data = await wpFetch<WpPost[]>(
+        `posts?before=${encodeURIComponent(date)}&per_page=1&order=desc`,
+    );
+    if (data === null || data.length === 0) {
+        const sorted = [...mockPosts].sort(
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+        );
+        const idx = sorted.findIndex((p) => p.date === date);
+        if (idx === -1 || idx === sorted.length - 1) return null;
+        return toWpPost(sorted[idx + 1]);
+    }
+    return data[0];
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────────────────────

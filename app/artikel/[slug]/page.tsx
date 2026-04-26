@@ -2,12 +2,30 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getPostBySlug, getLatestPosts } from "@/lib/wordpress";
+import { Calendar, ChevronLeft, ChevronRight, Clock, Tag } from "lucide-react";
+import {
+    getPostBySlug,
+    getLatestPosts,
+    getTagsByIds,
+    getCategories,
+    getMediaById,
+    getPrevPost,
+    getNextPost,
+} from "@/lib/wordpress";
 import { PageWrap } from "@/components/layout/page-wrap";
 import { Section } from "@/components/layout/section";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { mockPosts } from "@/lib/mock/posts";
+
+const IMAGE_PLACEHOLDER =
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='450' viewBox='0 0 800 450'%3E%3Crect width='800' height='450' fill='%23e8f4fb'/%3E%3Crect x='300' y='135' width='200' height='160' rx='16' fill='%2329abe2' opacity='.2'/%3E%3Ccircle cx='400' cy='195' r='44' fill='%2329abe2' opacity='.3'/%3E%3Cpath d='M310 315 l60-80 50 60 36-40 94 60z' fill='%2329abe2' opacity='.15'/%3E%3C/svg%3E";
+
+function estimateReadTime(html: string): number {
+    const text = html.replace(/<[^>]+>/g, "");
+    const words = text.trim().split(/\s+/).length;
+    return Math.max(1, Math.ceil(words / 200));
+}
 
 interface Props {
     params: Promise<{ slug: string }>;
@@ -20,18 +38,9 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
     const post = await getPostBySlug(slug);
-
-    if (!post) {
-        return { title: "Artikel tidak ditemukan | SMA Nasional Malang" };
-    }
-
-    const title =
-        typeof post.title === "string" ? post.title : post.title?.rendered;
-    const description =
-        typeof post.excerpt === "string"
-            ? post.excerpt
-            : post.excerpt?.rendered?.replace(/<[^>]+>/g, "") ?? "";
-
+    if (!post) return { title: "Artikel tidak ditemukan | SMA Nasional Malang" };
+    const title = post.title.rendered;
+    const description = post.excerpt.rendered.replace(/<[^>]+>/g, "").slice(0, 160);
     return {
         title: `${title} | SMA Nasional Malang`,
         description,
@@ -41,27 +50,43 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ArtikelDetailPage({ params }: Props) {
     const { slug } = await params;
     const post = await getPostBySlug(slug);
-
     if (!post) notFound();
 
-    const title =
-        typeof post.title === "string" ? post.title : post.title?.rendered;
-    const content =
-        typeof post.content === "string"
-            ? post.content
-            : post.content?.rendered ?? "";
+    // Phase 2: parallel fetch all supplemental data
+    const [featuredImage, allCategories, tags, prevPost, nextPost, latestPosts] =
+        await Promise.all([
+            post.featured_media > 0 ? getMediaById(post.featured_media) : Promise.resolve(null),
+            getCategories(),
+            getTagsByIds(post.tags),
+            getPrevPost(post.date),
+            getNextPost(post.date),
+            getLatestPosts(7),
+        ]);
+
+    const title = post.title.rendered;
+    const content = post.content.rendered;
+    const readTime = estimateReadTime(content);
     const date = new Date(post.date).toLocaleDateString("id-ID", {
         day: "numeric",
         month: "long",
         year: "numeric",
     });
 
-    // Related: latest 3 posts excluding current
-    const allPosts = await getLatestPosts(7);
-    const related = allPosts.filter((p) => p.slug !== slug).slice(0, 3);
+    const postCategories = allCategories.filter((c) => post.categories.includes(c.id));
 
-    // Find the mock post for image (WordPress API may not return featured image in this simple setup)
+    // Featured image: WP API first, then mock fallback
     const mockPost = mockPosts.find((p) => p.slug === slug);
+    const imageUrl = featuredImage?.source_url ?? mockPost?.image ?? null;
+
+    // Related posts: latest excluding current, fetch their images in parallel
+    const related = latestPosts.filter((p) => p.slug !== slug).slice(0, 3);
+    const relatedWithImages = await Promise.all(
+        related.map(async (p) => {
+            const img = p.featured_media > 0 ? await getMediaById(p.featured_media) : null;
+            const mockImg = mockPosts.find((m) => m.slug === p.slug)?.image ?? null;
+            return { post: p, imageUrl: img?.source_url ?? mockImg };
+        }),
+    );
 
     return (
         <PageWrap
@@ -72,85 +97,181 @@ export default async function ArtikelDetailPage({ params }: Props) {
             ]}
         >
             <Section py="sm">
-                <article className="max-w-3xl mx-auto flex flex-col gap-6">
-                    {/* Header */}
-                    <header className="flex flex-col gap-3">
-                        <p className="text-xs text-muted-foreground">{date}</p>
-                        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold leading-tight text-foreground">
-                            {title}
-                        </h1>
+                <article className="max-w-3xl mx-auto">
+
+                    {/* ── Header ──────────────────────────────────────────── */}
+                    <header className="flex flex-col gap-4 mb-8">
+                        {/* Category badges */}
+                        {postCategories.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                                {postCategories.map((c) => (
+                                    <Link key={c.id} href={`/artikel?kategori=${c.slug}`}>
+                                        <Badge
+                                            variant="secondary"
+                                            className="text-xs font-bold tracking-wide uppercase hover:bg-site-primary hover:text-white transition-colors cursor-pointer"
+                                        >
+                                            {c.name}
+                                        </Badge>
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
+
+                        <h1
+                            className="text-2xl md:text-3xl lg:text-4xl font-bold leading-tight text-foreground"
+                            dangerouslySetInnerHTML={{ __html: title }}
+                        />
+
+                        <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm text-muted-foreground">
+                            <span className="flex items-center gap-1.5">
+                                <Calendar className="w-4 h-4 shrink-0" />
+                                {date}
+                            </span>
+                            <span className="flex items-center gap-1.5">
+                                <Clock className="w-4 h-4 shrink-0" />
+                                {readTime} menit baca
+                            </span>
+                        </div>
                     </header>
 
-                    {/* Featured image */}
-                    {mockPost?.image && (
-                        <div className="relative aspect-video w-full overflow-hidden rounded-2xl">
+                    {/* ── Featured image ───────────────────────────────────── */}
+                    {imageUrl && (
+                        <figure className="relative aspect-video w-full overflow-hidden rounded-2xl mb-10 shadow-site">
                             <Image
-                                src={mockPost.image}
+                                src={imageUrl}
                                 alt={title}
                                 fill
                                 className="object-cover"
                                 sizes="(max-width: 768px) 100vw, 768px"
                                 priority
                             />
-                        </div>
+                        </figure>
                     )}
 
-                    {/* Body */}
+                    {/* ── Article content ──────────────────────────────────── */}
                     <div
-                        className="prose prose-sm md:prose-base max-w-none text-foreground/80 leading-relaxed"
+                        className="wp-content"
                         dangerouslySetInnerHTML={{ __html: content }}
                     />
 
-                    {/* Back link */}
-                    <div className="pt-6 border-t border-border">
+                    {/* ── Tags ─────────────────────────────────────────────── */}
+                    {tags.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-2 mt-10 pt-6 border-t border-border">
+                            <Tag className="w-4 h-4 text-muted-foreground shrink-0" />
+                            {tags.map((tag) => (
+                                <Link
+                                    key={tag.id}
+                                    href={`/artikel?q=${encodeURIComponent(tag.name)}`}
+                                >
+                                    <Badge
+                                        variant="outline"
+                                        className="text-xs hover:bg-secondary transition-colors cursor-pointer"
+                                    >
+                                        {tag.name}
+                                    </Badge>
+                                </Link>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* ── Prev / Next navigation ───────────────────────────── */}
+                    {(prevPost ?? nextPost) && (
+                        <nav
+                            aria-label="Navigasi artikel"
+                            className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-10 pt-6 border-t border-border"
+                        >
+                            {prevPost ? (
+                                <Link
+                                    href={`/artikel/${prevPost.slug}`}
+                                    className="surface flex flex-col gap-1 p-4 rounded-xl group hover:border-site-primary transition-colors"
+                                >
+                                    <span className="flex items-center gap-1 text-xs text-muted-foreground font-semibold uppercase tracking-wide">
+                                        <ChevronLeft className="w-3.5 h-3.5" />
+                                        Sebelumnya
+                                    </span>
+                                    <span
+                                        className="text-sm font-bold leading-snug text-foreground group-hover:text-site-primary transition-colors line-clamp-2 mt-0.5"
+                                        dangerouslySetInnerHTML={{ __html: prevPost.title.rendered }}
+                                    />
+                                </Link>
+                            ) : (
+                                <div />
+                            )}
+                            {nextPost ? (
+                                <Link
+                                    href={`/artikel/${nextPost.slug}`}
+                                    className="surface flex flex-col gap-1 p-4 rounded-xl group text-right hover:border-site-primary transition-colors"
+                                >
+                                    <span className="flex items-center justify-end gap-1 text-xs text-muted-foreground font-semibold uppercase tracking-wide">
+                                        Selanjutnya
+                                        <ChevronRight className="w-3.5 h-3.5" />
+                                    </span>
+                                    <span
+                                        className="text-sm font-bold leading-snug text-foreground group-hover:text-site-primary transition-colors line-clamp-2 mt-0.5"
+                                        dangerouslySetInnerHTML={{ __html: nextPost.title.rendered }}
+                                    />
+                                </Link>
+                            ) : (
+                                <div />
+                            )}
+                        </nav>
+                    )}
+
+                    {/* ── Back button ──────────────────────────────────────── */}
+                    <div className="mt-8">
                         <Button asChild variant="outline" size="sm">
-                            <Link href="/artikel">&larr; Kembali ke Artikel</Link>
+                            <Link href="/artikel">← Kembali ke Artikel</Link>
                         </Button>
                     </div>
                 </article>
             </Section>
 
-            {/* Related posts */}
-            {related.length > 0 && (
-                <Section py="sm">
-                    <h2 className="text-lg font-bold text-foreground mb-6">Artikel Lainnya</h2>
+            {/* ── Related articles ──────────────────────────────────────────── */}
+            {relatedWithImages.length > 0 && (
+                <Section py="sm" className="bg-site-bg border-t border-border">
+                    <h2 className="section-title mb-6">Artikel Lainnya</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                        {related.map((relPost) => {
-                            const relTitle =
-                                typeof relPost.title === "string"
-                                    ? relPost.title
-                                    : relPost.title?.rendered;
-                            const relExcerpt =
-                                typeof relPost.excerpt === "string"
-                                    ? relPost.excerpt
-                                    : relPost.excerpt?.rendered.replace(/<[^>]+>/g, "");
-                            const relMock = mockPosts.find((p) => p.slug === relPost.slug);
+                        {relatedWithImages.map(({ post: relPost, imageUrl: relImg }) => {
+                            const relTitle = relPost.title.rendered;
+                            const relExcerpt = relPost.excerpt.rendered.replace(/<[^>]+>/g, "");
+                            const relDate = new Date(relPost.date).toLocaleDateString("id-ID", {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                            });
+                            const relCategories = allCategories.filter((c) =>
+                                relPost.categories.includes(c.id),
+                            );
                             return (
                                 <Link
                                     key={relPost.slug}
                                     href={`/artikel/${relPost.slug}`}
-                                    className="surface flex flex-col gap-3 overflow-hidden group"
+                                    className="surface flex flex-col overflow-hidden group"
                                 >
-                                    {relMock?.image && (
-                                        <div className="relative aspect-video w-full overflow-hidden">
-                                            <Image
-                                                src={relMock.image}
-                                                alt={relTitle}
-                                                fill
-                                                className="object-cover transition-transform duration-300 group-hover:scale-105"
-                                                sizes="(max-width: 640px) 100vw, 33vw"
-                                            />
-                                        </div>
-                                    )}
-                                    <div className="flex flex-col gap-2 p-4">
-                                        <Badge variant="secondary" className="text-xs self-start">
-                                            {relMock?.category ?? "Artikel"}
-                                        </Badge>
-                                        <h3 className="font-bold text-sm leading-snug group-hover:text-site-primary transition-colors">
-                                            {relTitle}
-                                        </h3>
-                                        <p className="text-xs text-muted-foreground line-clamp-2">
+                                    <div className="relative aspect-video w-full overflow-hidden">
+                                        <Image
+                                            src={relImg ?? IMAGE_PLACEHOLDER}
+                                            alt={relTitle}
+                                            fill
+                                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                            sizes="(max-width: 640px) 100vw, 33vw"
+                                        />
+                                    </div>
+                                    <div className="flex flex-col gap-1.5 p-4 flex-1">
+                                        {relCategories.length > 0 && (
+                                            <span className="text-xs font-bold tracking-wider uppercase text-site-primary">
+                                                {relCategories[0].name}
+                                            </span>
+                                        )}
+                                        <h3
+                                            className="font-bold text-sm leading-snug group-hover:text-site-primary transition-colors line-clamp-2"
+                                            dangerouslySetInnerHTML={{ __html: relTitle }}
+                                        />
+                                        <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
                                             {relExcerpt}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground mt-auto pt-2 border-t border-border">
+                                            {relDate}
                                         </p>
                                     </div>
                                 </Link>
