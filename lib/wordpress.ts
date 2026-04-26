@@ -335,8 +335,10 @@ export async function getGalleryItemsPaginated(
     page = 1,
     perPage = 12,
 ): Promise<{ items: WpGalleryItem[]; total: number; totalPages: number }> {
+    // Overfetch by 1 to reliably detect the last page without relying on headers
+    const fetchLimit = perPage + 1;
     const params = new URLSearchParams({
-        _limit: String(perPage),
+        _limit: String(fetchLimit),
         _page: String(page),
     });
     const { data, total, totalPages } = await wpFetchWithMeta<WpGalleryItem[]>(
@@ -352,10 +354,18 @@ export async function getGalleryItemsPaginated(
         const start = (page - 1) * perPage;
         return { items: allPhotos.slice(start, start + perPage), total: mockTotal, totalPages: mockTotalPages };
     }
-    // JetEngine CCT may not send X-WP-Total headers — estimate from response length
-    const effectiveTotal = total > 0 ? total : (data.length < perPage ? (page - 1) * perPage + data.length : (page + 1) * perPage);
-    const effectiveTotalPages = totalPages > 0 ? totalPages : (data.length < perPage ? page : page + 1);
-    return { items: data, total: effectiveTotal, totalPages: effectiveTotalPages };
+    // Use real header totals if available
+    if (totalPages > 0) {
+        return { items: data.slice(0, perPage), total, totalPages };
+    }
+    // Detect last page via overfetch: got more than perPage → there is a next page
+    const hasMore = data.length > perPage;
+    const items = data.slice(0, perPage);
+    const effectiveTotalPages = hasMore ? page + 1 : page;
+    const effectiveTotal = hasMore
+        ? effectiveTotalPages * perPage
+        : (page - 1) * perPage + items.length;
+    return { items, total: effectiveTotal, totalPages: effectiveTotalPages };
 }
 
 export async function getGalleryItemById(id: string | number): Promise<WpGalleryItem | null> {
