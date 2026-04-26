@@ -15,10 +15,7 @@ export const navItems: NavItem[] = [
     { label: "Guru/Karyawan", href: "/guru-karyawan" },
     {
         label: "Galeri",
-        children: [
-            { label: "Foto", href: "/galeri/foto" },
-            { label: "Video", href: "/galeri/video" },
-        ],
+        href: "/galeri",
     },
     { label: "Artikel", href: "/artikel" },
     { label: "Kontak", href: "/kontak" },
