@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { GalleryLightbox } from "@/components/elements/gallery-lightbox";
-import { parseGalleryPhotos } from "@/lib/wordpress";
+import { parseGalleryPhotos } from "@/lib/utils";
 import type { WpGalleryItem } from "@/types/wordpress";
 
 type SelectedGallery = { item: WpGalleryItem; photos: string[] };

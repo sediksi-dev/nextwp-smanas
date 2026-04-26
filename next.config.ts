@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-const cmsUrl = process.env.NEXT_PUBLIC_WP_URL;
+const cmsUrl = process.env.WP_URL;
 const parsedCmsUrl = cmsUrl ? new URL(cmsUrl) : null;
 
 const baseRemotePatterns: NonNullable<NextConfig["images"]>["remotePatterns"] = [

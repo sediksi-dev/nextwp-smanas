@@ -1,3 +1,4 @@
+import "server-only";
 import { mockPosts } from "@/lib/mock/posts";
 import { mockTeachers, type StaffMember } from "@/lib/mock/teachers";
 import { mockAchievements } from "@/lib/mock/achievements";
@@ -14,7 +15,7 @@ import type {
     WpTeacher,
 } from "@/types/wordpress";
 
-const baseUrl = process.env.NEXT_PUBLIC_WP_URL;
+const baseUrl = process.env.WP_URL;
 const REVALIDATE = Number(process.env.WP_REVALIDATE_SECONDS ?? 1800);
 const WP_USERNAME = process.env.WP_APP_USERNAME;
 const WP_PASSWORD = process.env.WP_APP_PASSWORD;
