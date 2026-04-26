@@ -70,7 +70,13 @@ export function HeaderNavMobile({ navItems, ctaText, ctaUrl }: { navItems: NavIt
                     </ScrollArea>
                     <DrawerFooter className="mt-auto p-4">
                         {ctaText && ctaUrl && (
-                            <Button variant="accent" size="lg" asChild>
+                            <Button variant="accent" size="lg" asChild
+                                onClick={() => {
+                                    setTimeout(() => {
+                                        setMobileOpen((prev) => !prev)
+                                    }, 200)
+                                }}
+                            >
                                 <Link href={ctaUrl}>{ctaText}</Link>
                             </Button>
                         )}
@@ -93,6 +99,6 @@ export function HeaderNavMobile({ navItems, ctaText, ctaUrl }: { navItems: NavIt
             >
                 <Menu />
             </Button>
-        </div>
+        </div >
     );
 }
