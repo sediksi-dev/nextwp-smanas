@@ -14,6 +14,7 @@ import type {
     WpGalleryItem,
     WpMediaItem,
     WpPost,
+    WpPpdbItem,
     WpTag,
     WpTeacher,
 } from "@/types/wordpress";
@@ -446,6 +447,49 @@ export async function getSiteConfig(): Promise<SmanasSiteConfig | null> {
 
 export async function getProfilesConfig() {
     return wpFetch<SmanasProfilesConfig>("profiles", "smanas/v1");
+}
+
+// ── PPDB (custom post type) ──────────────────────────────────────────────────────────────────────
+
+/** Import mock data lazily so server-only module doesn't bloat client tree-shake */
+const mockPpdb = (): WpPpdbItem[] => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return require("@/lib/mock/ppdb-mock.json") as WpPpdbItem[];
+};
+
+export async function getPpdbById(id: number): Promise<WpPpdbItem | null> {
+    const data = await wpFetch<WpPpdbItem>(`ppdb/${id}`);
+    if (data === null) {
+        return mockPpdb().find((p) => p.id === id) ?? null;
+    }
+    return data;
+}
+
+export async function getPpdbList(limit = 10): Promise<WpPpdbItem[]> {
+    const data = await wpFetch<WpPpdbItem[]>(`ppdb?per_page=${limit}&orderby=date&order=desc`);
+    if (data === null) return mockPpdb().slice(0, limit);
+    return data;
+}
+
+export async function getPpdbBySlug(slug: string): Promise<WpPpdbItem | null> {
+    const data = await wpFetch<WpPpdbItem[]>(`ppdb?slug=${encodeURIComponent(slug)}&per_page=1`);
+    if (data === null || data.length === 0) {
+        return mockPpdb().find((p) => p.slug === slug) ?? null;
+    }
+    return data[0];
+}
+
+/**
+ * Fetch a single post or page by numeric ID.
+ * Tries wp/v2/posts first, then wp/v2/pages.
+ * Used to resolve `meta.related_content` IDs.
+ */
+export async function getPostOrPageById(id: number): Promise<{ slug: string; title: string; type: "post" | "page" } | null> {
+    const post = await wpFetch<WpPost>(`posts/${id}`);
+    if (post) return { slug: post.slug, title: post.title.rendered, type: "post" };
+    const page = await wpFetch<WpPost>(`pages/${id}`);
+    if (page) return { slug: page.slug, title: page.title.rendered, type: "page" };
+    return null;
 }
 
 // ── Contact Config ────────────────────────────────────────────────────────────────────────────

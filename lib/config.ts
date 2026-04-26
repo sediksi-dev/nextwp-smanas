@@ -58,3 +58,4 @@ export const socialLinks = [
 ] as const;
 
 export type SocialIcon = (typeof socialLinks)[number]["icon"];
+

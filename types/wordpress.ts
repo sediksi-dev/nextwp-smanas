@@ -256,6 +256,47 @@ export type SmanasContactConfig = {
     };
 };
 
+// ── PPDB (custom post type) ───────────────────────────────────────────────────────────────────
+
+/** Normalised related link item from meta.related_links */
+export type PpdbRelatedLink = {
+    title: string;
+    url: string;
+};
+
+export type WpPpdbMeta = {
+    /** URL to the promotional flyer image — used as featured image */
+    flyer: string;
+    /** Admission year, e.g. "2021" */
+    year_open: string;
+    /** Array of WP post/page IDs (as strings) to display in the sidebar */
+    related_content: string[];
+    /**
+     * External links for the sidebar.
+     * Can be `""` (no links) or an object like `{ "item-0": { title, url }, "item-1": ... }`
+     */
+    related_links: "" | Record<string, PpdbRelatedLink>;
+    /** URL to an xlsx file with admission results */
+    admission_results: string;
+    footnotes: string;
+};
+
+export type WpPpdbItem = {
+    id: number;
+    slug: string;
+    date: string;
+    date_gmt: string;
+    modified: string;
+    status: string;
+    type: string;
+    link: string;
+    title: WpRendered;
+    content: WpRendered & { protected: boolean };
+    template: string;
+    meta: WpPpdbMeta;
+    class_list: string[];
+};
+
 // ──── Achievements ────────────────────────────────────────────────────────────────
 
 export type AchievementScope = "kecamatan" | "regional" | "provinsi" | "nasional" | "internasional" | "lainnya";
