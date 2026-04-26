@@ -99,7 +99,7 @@ export function PrestasiSection(props: PrestasiSectionProps) {
             />
 
             {/* Scope filter */}
-            <div className="flex flex-wrap justify-center gap-2 mb-8">
+            <div className="flex md:flex-wrap md:justify-center gap-2 mb-8 overflow-x-auto">
                 {scopes.filter(scope => props.achievements.some(a => a.scope === scope)).map((scope) => (
                     <button
                         key={scope}
