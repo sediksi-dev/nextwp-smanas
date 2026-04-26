@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Section } from "@/components/layout/section";
 import Link from "next/link";
-import { mockNews, mockEvents, mockInspirations } from "@/lib/mock-data";
 import { SectionTitle } from "@/components/elements/section-title";
 import { PostCardList } from "@/components/elements/post-card";
 import { getPostsByCategory } from "@/lib/wordpress";
@@ -62,7 +61,7 @@ export async function PostsSection(props: PostsSectionProps) {
 
 
     return (
-        <Section>
+        <Section py="sm">
             <SectionTitle
                 variant="badge"
                 eyebrow={props.article_section_eyebrow || "Informasi Terkini"}

@@ -3,7 +3,7 @@ import { Section } from "@/components/layout/section";
 import { SectionTitle } from "@/components/elements/section-title";
 import { Button } from "@/components/ui/button";
 import { getYoutubeVideos } from "@/lib/youtube";
-import { YoutubeVideoGrid } from "./youtube-video-grid";
+import { YoutubeVideoGrid } from "../elements/youtube-video-grid";
 
 const YtIcon = () => (
     <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 shrink-0" aria-hidden="true">
@@ -27,7 +27,7 @@ export async function YoutubeSection({
     if (!videos.length) return null;
 
     return (
-        <Section className="bg-site-bg">
+        <Section py="sm">
 
             <SectionTitle
                 variant="centered-bar"

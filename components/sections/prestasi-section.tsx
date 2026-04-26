@@ -89,7 +89,7 @@ export function PrestasiSection(props: PrestasiSectionProps) {
         .slice(0, 8);
 
     return (
-        <Section>
+        <Section py="sm">
             <SectionTitle
                 variant="default"
                 eyebrow={props.achievements_section_eyebrow}

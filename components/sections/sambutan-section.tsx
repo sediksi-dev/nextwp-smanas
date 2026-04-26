@@ -17,7 +17,7 @@ interface SambutanSectionProps {
 
 export function SambutanSection(props: SambutanSectionProps) {
     return (
-        <Section>
+        <Section py="sm">
             {/* Title */}
             <SectionTitle
                 variant="centered-bar"

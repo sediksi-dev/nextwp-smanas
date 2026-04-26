@@ -18,7 +18,7 @@ export function GaleriSection() {
     const filtered = active === "Semua" ? mockGallery : mockGallery.filter(g => g.type === active);
 
     return (
-        <Section className="bg-site-bg">
+        <Section py="sm">
             <SectionTitle
                 variant="underline"
                 eyebrow="Dokumentasi"
