@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { footerGroups } from "@/lib/site";
 import { schoolInfo, socialLinks, type SocialIcon } from "@/lib/config";
+import { getContactConfig } from "@/lib/wordpress";
 
 function SocialIconComponent({ icon }: { icon: SocialIcon }) {
     const s = 16;
@@ -42,9 +43,31 @@ function SocialIconComponent({ icon }: { icon: SocialIcon }) {
  * Site footer.
  *
  * To customise navigation links, edit `footerGroups` in lib/site.ts.
- * To customise social media links, edit `socialLinks` in lib/config.ts.
+ * To customise social media links, edit `socialLinks` in lib/config.ts or
+ * update the contact settings in WordPress (smanas/v1/contact).
  */
-export function SiteFooter() {
+export async function SiteFooter() {
+    const contactConfig = await getContactConfig();
+
+    type FooterSocial = { label: string; href: string; icon: SocialIcon };
+
+    let footerSocials: FooterSocial[];
+    if (contactConfig) {
+        const c = contactConfig.contact;
+        const toIgUrl = (v: string) =>
+            v.startsWith("http") ? v : `https://www.instagram.com/${v.replace(/^@/, "")}`;
+        const raw: Array<{ label: string; href: string; icon: SocialIcon } | null> = [
+            c.contact_facebook ? { label: "Facebook", href: c.contact_facebook, icon: "facebook" } : null,
+            c.contact_instagram ? { label: "Instagram", href: toIgUrl(c.contact_instagram), icon: "instagram" } : null,
+            c.contact_tiktok ? { label: "TikTok", href: c.contact_tiktok, icon: "tiktok" } : null,
+            c.contact_youtube ? { label: "YouTube", href: c.contact_youtube, icon: "youtube" } : null,
+            c.contact_email ? { label: "Email", href: `mailto:${c.contact_email}`, icon: "email" } : null,
+        ];
+        footerSocials = raw.filter((x): x is FooterSocial => x !== null);
+    } else {
+        footerSocials = socialLinks as unknown as FooterSocial[];
+    }
+
     return (
         <footer className="mt-auto bg-site-primary-strong text-white/80">
             <div className="container py-12 md:py-16">
@@ -73,7 +96,7 @@ export function SiteFooter() {
 
                         {/* Social icons */}
                         <div className="mt-1 flex flex-wrap gap-2">
-                            {socialLinks.map((item) => (
+                            {footerSocials.map((item) => (
                                 <a
                                     key={item.icon}
                                     href={item.href}

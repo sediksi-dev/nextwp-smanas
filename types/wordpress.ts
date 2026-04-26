@@ -228,6 +228,34 @@ export type SmanasProfilesConfig = {
     organization_structure: OrganizationStructurePage;
 };
 
+// ── Contact Config ────────────────────────────────────────────────────────────────────────────
+
+export type SmanasContactConfig = {
+    headings: {
+        contact_page_title: string;
+        contact_page_subtitle: string;
+        contact_page_description: string;
+    };
+    office: {
+        contact_address: string;
+        contact_opentime: string;
+        contact_closetime: string;
+        contact_openday: string;
+        contact_closeday: string;
+    };
+    contact: {
+        contact_email: string;
+        contact_phone_1: string;
+        contact_phone_2: string;
+        contact_facebook: string;
+        contact_instagram: string;
+        contact_threads: string;
+        contact_tiktok: string;
+        contact_youtube: string;
+        contact_linkedin: string;
+    };
+};
+
 // ──── Achievements ────────────────────────────────────────────────────────────────
 
 export type AchievementScope = "kecamatan" | "regional" | "provinsi" | "nasional" | "internasional" | "lainnya";

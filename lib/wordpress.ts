@@ -6,6 +6,7 @@ import { mockGallery, type GalleryPhoto } from "@/lib/mock/gallery";
 import type {
     Achievement,
     AchievementScope,
+    SmanasContactConfig,
     SmanasProfilesConfig,
     SmanasSiteConfig,
     TeacherCategory,
@@ -445,6 +446,12 @@ export async function getSiteConfig(): Promise<SmanasSiteConfig | null> {
 
 export async function getProfilesConfig() {
     return wpFetch<SmanasProfilesConfig>("profiles", "smanas/v1");
+}
+
+// ── Contact Config ────────────────────────────────────────────────────────────────────────────
+
+export async function getContactConfig(): Promise<SmanasContactConfig | null> {
+    return wpFetch<SmanasContactConfig>("contact", "smanas/v1");
 }
 
 // ── Attachments ────────────────────────────────────────────────────────────────────────────────
