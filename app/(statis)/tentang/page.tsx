@@ -2,45 +2,52 @@ import { Section } from "@/components/layout/section";
 import Link from "next/link";
 import { PageWrap } from "@/components/layout/page-wrap";
 import PageHeading from "@/components/elements/page-heading";
+import { getProfilesConfig } from "@/lib/wordpress";
+import { parseHtmlContent } from "@/lib/utils";
 
 export const metadata = {
     title: "Tentang Kami",
     description: "Pelajari lebih lanjut tentang profil, visi misi, dan struktur organisasi SMA Nasional Malang.",
 };
 
-const destinations = [
-    {
-        number: "01",
-        eyebrow: "Identitas Sekolah",
-        title: "Profil Sekolah",
-        description: "Sejarah SMA Nasional Malang, makna lambang, susunan komite sekolah, dan mars kebanggaan.",
-        href: "/profil-sekolah",
-    },
-    {
-        number: "02",
-        eyebrow: "Arah & Tujuan",
-        title: "Visi & Misi",
-        description: "Cita-cita, misi, dan tujuan dalam membentuk generasi yang unggul, luhur dalam kepribadian, serta terampil.",
-        href: "/visi-misi",
-    },
-    {
-        number: "03",
-        eyebrow: "Kepemimpinan",
-        title: "Struktur Organisasi",
-        description: "Susunan kepemimpinan sekolah beserta nama dan tanggung jawab tiap bidang.",
-        href: "/struktur-organisasi",
-    },
-];
 
-export default function TentangPage() {
+
+export default async function TentangPage() {
+    const profilesConfig = await getProfilesConfig();
+    const aboutUsHeadings = profilesConfig?.headings;
+
+    const destinations = [
+        {
+            number: "01",
+            eyebrow: "Identitas Sekolah",
+            title: parseHtmlContent(aboutUsHeadings?.profile_page_title || "Profil Sekolah"),
+            description: parseHtmlContent(aboutUsHeadings?.profile_page_description || "Sejarah SMA Nasional Malang, makna lambang, susunan komite sekolah, dan mars kebanggaan."),
+            href: "/profil-sekolah",
+        },
+        {
+            number: "02",
+            eyebrow: "Arah & Tujuan",
+            title: parseHtmlContent(aboutUsHeadings?.vision_page_title || "Visi & Misi"),
+            description: parseHtmlContent(aboutUsHeadings?.vision_page_description || "Cita-cita, misi, dan tujuan dalam membentuk generasi yang unggul, luhur dalam kepribadian, serta terampil."),
+            href: "/visi-misi",
+        },
+        {
+            number: "03",
+            eyebrow: "Kepemimpinan",
+            title: parseHtmlContent(aboutUsHeadings?.structure_page_title || "Struktur Organisasi"),
+            description: parseHtmlContent(aboutUsHeadings?.structure_page_description || "Susunan kepemimpinan sekolah beserta nama dan tanggung jawab tiap bidang."),
+            href: "/struktur-organisasi",
+        },
+    ];
+
+
     return (
         <PageWrap breadcrumb={[{ label: "Beranda", href: "/" }, { label: "Tentang Kami" }]}>
             {/* Plain heading — no card */}
             <PageHeading
-                title="Mengenal SMA Nasional Malang"
+                title={parseHtmlContent(aboutUsHeadings?.about_us_title || "")}
                 subtitle="Tentang Kami"
-                description="SMA Nasional Malang berkomitmen mencetak generasi yang unggul dalam prestasi,
-                luhur dalam kepribadian, serta kreatif dan terampil dalam keseharian."
+                description={parseHtmlContent(aboutUsHeadings?.about_us_description || "")}
             />
 
 

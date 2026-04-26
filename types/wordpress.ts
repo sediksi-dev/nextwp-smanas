@@ -176,6 +176,58 @@ export type SmanasSiteConfig = {
     youtube: YoutubeSectionConfig;
 }
 
+// ── Profiles Config ───────────────────────────────────────────────────────────────────────────
+
+export type AboutUsHeadings = {
+    about_us_title: string;
+    about_us_description: string;
+    profile_page_title: string;
+    profile_page_description: string;
+    vision_page_title: string;
+    vision_page_description: string;
+    structure_page_title: string;
+    structure_page_description: string;
+};
+
+export type ProfilePage = {
+    profile_photo: string;
+    profile_name: string;
+    profile_role: string;
+    profile_intro: string;
+    profile_history_title: string;
+    profile_history_content?: string;
+    profile_emblem_title: string;
+    profile_emblem_image: string;
+    profile_emblem_content?: string;
+    profile_committee_title: string;
+    profile_committee_content?: string;
+    profile_march_title: string;
+    profile_march_content?: string;
+};
+
+export type VisionMissionPage = {
+    school_vision: string;
+    school_mission: Array<{ school_mission_item: string }>;
+    school_goal: Array<{ school_goal_item: string }>;
+};
+
+export type OrganizationStructurePage = {
+    structure_principal: string;
+    structure_vice_1: string;
+    structure_vice_2: string;
+    structure_vice_3: string;
+    structure_vice_4: string;
+    structure_hoa: string;
+    structure_treasurer: string;
+};
+
+export type SmanasProfilesConfig = {
+    headings: AboutUsHeadings;
+    profile: ProfilePage;
+    vision_mission: VisionMissionPage;
+    organization_structure: OrganizationStructurePage;
+};
+
 // ──── Achievements ────────────────────────────────────────────────────────────────
 
 export type AchievementScope = "kecamatan" | "regional" | "provinsi" | "nasional" | "internasional" | "lainnya";

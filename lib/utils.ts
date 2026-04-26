@@ -1,4 +1,5 @@
 import { clsx, type ClassValue } from "clsx";
+import he from "he";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -25,4 +26,19 @@ export function parseGalleryPhotos(raw: string): string[] {
             return trimmed;
         })
         .filter((url) => url.startsWith("http"));
+}
+
+// utils/parseHtmlContent.ts
+
+export function parseHtmlContent(raw: string): string {
+    // 1. Decode HTML entities (&amp; -> &, dll.)
+    const decoded = he.decode(raw); // [web:73]
+
+    // 2. Bersihkan escape dan newline
+    const html = decoded
+        .replace(/\\'/g, "'")
+        .replace(/\r?\n/g, "<br />")
+        .trim();
+
+    return html;
 }
