@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ChevronLeft } from "lucide-react";
 import { getTeacherById, getTeachers } from "@/lib/wordpress";
 import { PageWrap } from "@/components/layout/page-wrap";
 import { Section } from "@/components/layout/section";
@@ -41,6 +42,20 @@ export default async function GuruProfilPage({ params }: Props) {
             ]}
         >
             <Section py="sm">
+                {/* Back navigation */}
+                <div className="mb-8 flex flex-wrap items-center gap-2">
+                    <Button asChild variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground">
+                        <Link href="/guru-karyawan">
+                            <ChevronLeft className="h-4 w-4" />
+                            Guru &amp; Karyawan
+                        </Link>
+                    </Button>
+                    <span className="text-muted-foreground/40">/</span>
+                    <Button asChild variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                        <Link href="/guru-karyawan/guru">Semua Guru</Link>
+                    </Button>
+                </div>
+
                 <div className="flex flex-col gap-8 md:flex-row md:items-start md:gap-12">
                     {/* Photo */}
                     <div className="surface shrink-0 self-start overflow-hidden rounded-2xl">

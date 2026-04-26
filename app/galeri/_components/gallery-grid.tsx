@@ -2,23 +2,18 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-} from "@/components/ui/dialog";
+import { GalleryLightbox } from "@/components/elements/gallery-lightbox";
 import { parseGalleryPhotos } from "@/lib/wordpress";
 import type { WpGalleryItem } from "@/types/wordpress";
+
+type SelectedGallery = { item: WpGalleryItem; photos: string[] };
 
 interface GalleryGridProps {
     items: WpGalleryItem[];
 }
 
 export function GalleryGrid({ items }: GalleryGridProps) {
-    const [selected, setSelected] = useState<WpGalleryItem | null>(null);
-    const selectedPhotos = selected ? parseGalleryPhotos(selected.gallery_photos) : [];
+    const [selected, setSelected] = useState<SelectedGallery | null>(null);
 
     return (
         <>
@@ -34,7 +29,7 @@ export function GalleryGrid({ items }: GalleryGridProps) {
                         return (
                             <button
                                 key={item._ID}
-                                onClick={() => setSelected(item)}
+                                onClick={() => setSelected({ item, photos })}
                                 className="group relative mb-4 block w-full break-inside-avoid overflow-hidden rounded-xl text-left cursor-pointer"
                             >
                                 <div className="relative aspect-4/3 w-full overflow-hidden">
@@ -61,33 +56,11 @@ export function GalleryGrid({ items }: GalleryGridProps) {
                 </div>
             )}
 
-            <Dialog open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }}>
-                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle>{selected?.gallery_title}</DialogTitle>
-                        {selected?.gallery_description && (
-                            <DialogDescription>{selected.gallery_description}</DialogDescription>
-                        )}
-                    </DialogHeader>
-
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        {selectedPhotos.map((url, i) => (
-                            <div
-                                key={i}
-                                className="relative aspect-4/3 w-full overflow-hidden rounded-lg"
-                            >
-                                <Image
-                                    src={url}
-                                    alt={`${selected?.gallery_title ?? "Foto"} ${i + 1}`}
-                                    fill
-                                    className="object-cover"
-                                    sizes="(max-width: 640px) 100vw, 50vw"
-                                />
-                            </div>
-                        ))}
-                    </div>
-                </DialogContent>
-            </Dialog>
+            <GalleryLightbox
+                item={selected?.item ?? null}
+                photos={selected?.photos ?? []}
+                onClose={() => setSelected(null)}
+            />
         </>
     );
 }
