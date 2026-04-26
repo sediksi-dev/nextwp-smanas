@@ -10,7 +10,7 @@ import { Button } from "../ui/button";
 import { type NavItem } from "@/lib/site.d";
 import Link from "next/link";
 
-export function HeaderNavDesktop({ navItems }: { navItems: NavItem[] }) {
+export function HeaderNavDesktop({ navItems, ctaText, ctaUrl }: { navItems: NavItem[]; ctaText?: string; ctaUrl?: string }) {
     return (
         <div className="hidden items-center gap-2 md:flex">
             <NavigationMenu>
@@ -62,9 +62,11 @@ export function HeaderNavDesktop({ navItems }: { navItems: NavItem[] }) {
                     ))}
                 </NavigationMenuList>
             </NavigationMenu>
-            <Button variant="accent" asChild>
-                <Link href="/ppdb">Info PPDB</Link>
-            </Button>
+            {ctaText && ctaUrl && (
+                <Button variant="accent" asChild>
+                    <Link href={ctaUrl}>{ctaText}</Link>
+                </Button>
+            )}
         </div>
     );
 }

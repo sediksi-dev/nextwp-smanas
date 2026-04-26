@@ -94,6 +94,20 @@ export type WpSiteInfo = {
     icon_url: string | null;
 };
 
+export type SEOConfig = {
+    smanas_meta_title: string;
+    smanas_meta_description: string;
+    smanas_global_image: string;
+    smanas_site_logo: string;
+    smanas_site_favicon: string;
+};
+
+export type PPDBConfig = {
+    header_button_text: string;
+    header_button_url: string;
+    active_ppdb: number | null;
+};
+
 export type SliderItem = {
     title: string;
     subtitle: string;
@@ -168,6 +182,8 @@ export type YoutubeSectionConfig = {
 
 export type SmanasSiteConfig = {
     site: WpSiteInfo;
+    seo: SEOConfig;
+    ppdb: PPDBConfig;
     slider: SliderSettings;
     greetings: GreetingsSectionConfig;
     achievements: AchievementsSectionConfig;

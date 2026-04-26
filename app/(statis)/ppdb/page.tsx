@@ -3,19 +3,21 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Section } from "@/components/layout/section";
 import { PageWrap } from "@/components/layout/page-wrap";
-import { getPpdbById, getPpdbList } from "@/lib/wordpress";
+import { getPpdbById, getPpdbList, getSiteConfig } from "@/lib/wordpress";
 
 export const metadata = {
     title: "PPDB | SMA Nasional Malang",
     description: "Informasi Penerimaan Peserta Didik Baru (PPDB) SMA Nasional Malang.",
 };
-const ACTIVE_PPDB_ID: number | null = null;
 
 export default async function PpdbPage() {
+    const config = await getSiteConfig();
+    const ACTIVE_PPDB_ID: number | null = Number(config?.ppdb?.active_ppdb || null);
     const [active, allList] = await Promise.all([
         ACTIVE_PPDB_ID ? getPpdbById(ACTIVE_PPDB_ID) : Promise.resolve(null),
         getPpdbList(50),
     ]);
+
 
     const previousList = allList.filter((p) => p.id !== ACTIVE_PPDB_ID);
 
@@ -35,12 +37,13 @@ export default async function PpdbPage() {
                 {active ? (
                     <div className="mt-8 flex flex-col gap-6 max-w-3xl mx-auto">
                         {active.meta.flyer && (
-                            <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-border shadow-site">
+                            // <div className="relative w-full h-125 overflow-hidden rounded-2xl border border-border shadow-site p-2 md:p-4 lg:p-1">
+                            <div className="relative w-full h-125 overflow-hidden rounded-2xl border border-border shadow-site p-2 md:p-4 lg:p-8">
                                 <Image
                                     src={active.meta.flyer}
                                     alt={"Flyer PPDB " + active.meta.year_open}
                                     fill
-                                    className="object-cover"
+                                    className="object-contain object-center b"
                                     sizes="(max-width: 768px) 100vw, 672px"
                                     priority
                                 />

@@ -17,7 +17,7 @@ import { ScrollArea } from "../ui/scroll-area";
 import { DialogTitle } from "@radix-ui/react-dialog";
 import { Separator } from "../ui/separator";
 
-export function HeaderNavMobile({ navItems }: { navItems: NavItem[] }) {
+export function HeaderNavMobile({ navItems, ctaText, ctaUrl }: { navItems: NavItem[]; ctaText?: string; ctaUrl?: string }) {
     const [mobileOpen, setMobileOpen] = useState(false);
 
     return (
@@ -69,9 +69,11 @@ export function HeaderNavMobile({ navItems }: { navItems: NavItem[] }) {
                         </nav>
                     </ScrollArea>
                     <DrawerFooter className="mt-auto p-4">
-                        <Button variant="accent" size="lg" asChild>
-                            <Link href="/ppdb">Info PPDB</Link>
-                        </Button>
+                        {ctaText && ctaUrl && (
+                            <Button variant="accent" size="lg" asChild>
+                                <Link href={ctaUrl}>{ctaText}</Link>
+                            </Button>
+                        )}
                         <DrawerClose asChild>
                             <Button variant="ghost" aria-label="Tutup menu" size="lg">
                                 Tutup
