@@ -207,7 +207,7 @@ a {
 }
 
 .btn {
-  @apply items-center rounded-full border border-transparent inline-flex font-bold justify-center min-h-[44px] px-4 py-[0.62rem];
+  @apply items-center rounded-full border border-transparent inline-flex font-bold justify-center min-h-11 px-4 py-[0.62rem];
 }
 
 .btn-primary {
@@ -246,7 +246,7 @@ a {
 }
 
 .site-nav-row {
-  @apply items-center flex gap-4 justify-between min-h-[70px];
+  @apply items-center flex gap-4 justify-between min-h-17.5;
 }
 
 .brand {
@@ -262,7 +262,7 @@ a {
 }
 
 .menu-toggle {
-  @apply bg-site-surface border border-site-border rounded-[0.7rem] min-h-[40px] min-w-[40px];
+  @apply bg-site-surface border border-site-border rounded-[0.7rem] min-h-10 min-w-10;
 }
 
 .site-links {
@@ -302,7 +302,7 @@ a {
 /* ── WordPress article content ──────────────────────────────────────────────── */
 .wp-content {
   color: color-mix(in srgb, var(--site-text) 88%, transparent);
-  @apply text-[1.0625rem] leading-[1.85] break-words;
+  @apply text-[1.0625rem] leading-[1.85] wrap-break-word;
 }
 
 .wp-content p {
