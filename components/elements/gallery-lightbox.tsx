@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -14,10 +15,14 @@ interface GalleryLightboxProps {
 
 export function GalleryLightbox({ item, photos, onClose }: GalleryLightboxProps) {
     const [currentIdx, setCurrentIdx] = useState(0);
+    const [prevItem, setPrevItem] = useState(item);
 
-    useEffect(() => {
+    // Reset index when gallery item changes — "adjusting state while rendering"
+    // pattern (avoids cascading renders from setState inside useEffect)
+    if (prevItem !== item) {
+        setPrevItem(item);
         setCurrentIdx(0);
-    }, [item]);
+    }
 
     const prev = useCallback(
         () => setCurrentIdx((i) => (i - 1 + photos.length) % photos.length),
@@ -76,13 +81,16 @@ export function GalleryLightbox({ item, photos, onClose }: GalleryLightboxProps)
                     {/* ── Main image ─────────────────────────────────────── */}
                     <div className="relative flex min-h-0 flex-1 items-center justify-center bg-gray-950">
                         {photos[currentIdx] && (
-                            // eslint-disable-next-line @next/next-eslint/no-img-element
-                            <img
-                                key={currentIdx}
-                                src={photos[currentIdx]}
-                                alt={`${item?.gallery_title ?? "Foto"} ${currentIdx + 1}`}
-                                className="max-h-[60dvh] max-w-full object-contain"
-                            />
+                            <div className="relative h-[60dvh] w-full">
+                                <Image
+                                    key={currentIdx}
+                                    src={photos[currentIdx]}
+                                    alt={`${item?.gallery_title ?? "Foto"} ${currentIdx + 1}`}
+                                    fill
+                                    className="object-contain"
+                                    sizes="(max-width: 896px) 100vw, 896px"
+                                />
+                            </div>
                         )}
 
                         {/* Nav arrows */}
@@ -115,14 +123,13 @@ export function GalleryLightbox({ item, photos, onClose }: GalleryLightboxProps)
                                     onClick={() => setCurrentIdx(i)}
                                     aria-label={`Foto ${i + 1}`}
                                     className={cn(
-                                        "h-14 w-20 shrink-0 overflow-hidden rounded-lg transition-all",
+                                        "relative h-14 w-20 shrink-0 overflow-hidden rounded-lg transition-all",
                                         i === currentIdx
-                                            ? "ring-2 ring-[var(--site-primary)] ring-offset-1 ring-offset-gray-900 opacity-100"
+                                            ? "ring-2 ring-site-primary ring-offset-1 ring-offset-gray-900 opacity-100"
                                             : "opacity-40 hover:opacity-70",
                                     )}
                                 >
-                                    {/* eslint-disable-next-line @next/next-eslint/no-img-element */}
-                                    <img src={url} alt="" className="h-full w-full object-cover" />
+                                    <Image src={url} alt="" fill className="object-cover" sizes="80px" />
                                 </button>
                             ))}
                         </div>

@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { PageWrap } from "@/components/layout/page-wrap";
 import PageHeading from "@/components/elements/page-heading";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getCategoryBySlug, getPostsByCategoryPaginated, getMediaById } from "@/lib/wordpress";
 import { CategorySearch } from "./_components/category-search";
+import { PostGridCard } from "@/app/artikel/_components/post-grid-card";
 
 const PER_PAGE = 12;
 
@@ -116,34 +115,15 @@ export default async function CategorySlugPage({ params, searchParams }: Props) 
                                 year: "numeric",
                             });
                             return (
-                                <article key={post.id} className="surface flex flex-col overflow-hidden">
-                                    <div className="relative aspect-video w-full overflow-hidden">
-                                        <Image
-                                            src={src}
-                                            alt={post.title.rendered}
-                                            fill
-                                            className="object-cover transition-transform duration-300 hover:scale-105"
-                                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                                        />
-                                    </div>
-                                    <div className="flex flex-1 flex-col gap-3 p-5">
-                                        <div className="flex items-center gap-2">
-                                            <Badge variant="secondary" className="text-xs">{category.name}</Badge>
-                                            <span className="text-xs text-muted-foreground">{date}</span>
-                                        </div>
-                                        <h2
-                                            className="font-bold leading-snug"
-                                            dangerouslySetInnerHTML={{ __html: post.title.rendered }}
-                                        />
-                                        <div
-                                            className="text-sm text-muted-foreground line-clamp-2"
-                                            dangerouslySetInnerHTML={{ __html: post.excerpt.rendered }}
-                                        />
-                                        <Button asChild variant="link" size="sm" className="mt-auto self-start px-0">
-                                            <Link href={`/artikel/${post.slug}`}>Baca selengkapnya &rarr;</Link>
-                                        </Button>
-                                    </div>
-                                </article>
+                                <PostGridCard
+                                    key={post.id}
+                                    title={post.title.rendered}
+                                    excerpt={post.excerpt.rendered}
+                                    href={`/artikel/${post.slug}`}
+                                    imageUrl={src}
+                                    date={date}
+                                    categoryName={category.name}
+                                />
                             );
                         })}
                     </div>

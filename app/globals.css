@@ -613,11 +613,14 @@ a {
   flex: 1 1 200px;
 }
 
-
 /* ── Animation keyframes ────────────────────────────────────────────────── */
 @keyframes shimmer {
-  0%   { background-position: -800px 0; }
-  100% { background-position:  800px 0; }
+  0% {
+    background-position: -800px 0;
+  }
+  100% {
+    background-position: 800px 0;
+  }
 }
 
 .shimmer {

@@ -1,11 +1,11 @@
-import Image from "next/image";
-import Link from "next/link";
 import { Section } from "@/components/layout/section";
-import { cn, parseHtmlContent } from "@/lib/utils";
+import { parseHtmlContent } from "@/lib/utils";
 import { PageWrap } from "@/components/layout/page-wrap";
 import PageHeading from "@/components/elements/page-heading";
 import { getProfilesConfig } from "@/lib/wordpress";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { ProfileIntro } from "./_components/profile-intro";
+import { ProfileTabNav } from "./_components/profile-tab-nav";
+import Image from "next/image";
 
 const TABS = [
     { label: "Sejarah", value: "sejarah" },
@@ -58,55 +58,18 @@ export default async function ProfilSekolahPage({
                 description={aboutUsHeadings?.profile_page_description || ""}
             />
 
-            <Section py="sm">
-                <div className="grid md:grid-cols-[220px_1fr] gap-8 md:gap-12 items-start">
-                    <div className="flex flex-col items-center text-center gap-3">
-                        <div className="w-full overflow-hidden rounded-xl">
-                            <AspectRatio ratio={1 / 1}>
-                                <Image
-                                    src={profiles?.profile_photo || ""}
-                                    alt={profiles?.profile_name || ""}
-                                    className="object-cover w-auto h-auto"
-                                    fill
-                                />
-                            </AspectRatio>
-                        </div>
-                        <p className="font-bold text-primary text-sm">{profiles?.profile_name || ""}</p>
-                        <p className="text-muted-foreground text-xs">{profiles?.profile_role || ""}</p>
-                    </div>
-
-                    <div className="flex flex-col gap-4">
-                        <h2 className="text-xl md:text-2xl font-bold text-foreground">
-                            Selayang Pandang
-                        </h2>
-                        <div className="prose text-base md:text-lg leading-relaxed text-foreground/80" dangerouslySetInnerHTML={{
-                            __html: parseHtmlContent(profiles?.profile_intro || ""),
-                        }} />
-                    </div>
-                </div>
-            </Section>
+            <ProfileIntro
+                photo={profiles?.profile_photo || ""}
+                name={profiles?.profile_name || ""}
+                role={profiles?.profile_role || ""}
+                intro={profiles?.profile_intro || ""}
+            />
 
             <Section py="sm">
                 <div className="border-t border-border pt-10">
                     <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-start">
                         {/* Tab navigation */}
-                        <nav aria-label="Tab profil sekolah" className="flex flex-row flex-wrap md:flex-col gap-2 md:w-48 shrink-0">
-                            {TABS.map((t) => (
-                                <Link
-                                    key={t.value}
-                                    href={`/profil-sekolah?tab=${t.value}`}
-                                    className={cn(
-                                        "px-5 py-2 rounded-full md:rounded-lg text-sm font-semibold border transition-colors text-left",
-                                        activeTab === t.value
-                                            ? "bg-site-primary text-white border-site-primary"
-                                            : "bg-white border-site-border text-site-muted hover:border-site-primary hover:text-site-primary",
-                                    )}
-                                    aria-current={activeTab === t.value ? "page" : undefined}
-                                >
-                                    {t.label}
-                                </Link>
-                            ))}
-                        </nav>
+                        <ProfileTabNav activeTab={activeTab} />
 
                         {/* Tab content */}
                         <div className="flex-1 min-w-0">

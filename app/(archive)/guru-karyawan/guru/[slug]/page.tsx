@@ -7,6 +7,7 @@ import { PageWrap } from "@/components/layout/page-wrap";
 import { Section } from "@/components/layout/section";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { TeacherCard } from "../../_components/teacher-card";
 
 interface Props {
     params: Promise<{ slug: string }>;
@@ -109,26 +110,7 @@ export default async function GuruProfilPage({ params }: Props) {
                     <h2 className="mb-6 text-xl font-bold tracking-tight">Lihat Guru Lainnya</h2>
                     <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4 md:gap-8">
                         {otherTeachers.map((other) => (
-                            <div key={other._ID} className="surface flex flex-col overflow-hidden">
-                                <div className="relative aspect-4/5 w-full overflow-hidden">
-                                    <Image
-                                        src={other.photo || "/assets/placeholder.jpg"}
-                                        alt={other.name}
-                                        fill
-                                        className="object-cover"
-                                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                                    />
-                                </div>
-                                <div className="flex flex-1 flex-col gap-3 p-4">
-                                    <div>
-                                        <p className="font-bold leading-snug text-sm">{other.name}</p>
-                                        <p className="mt-1 text-xs text-muted-foreground">{other.role}</p>
-                                    </div>
-                                    <Button asChild size="sm" variant="outline" className="mt-auto w-full">
-                                        <Link href={`/guru-karyawan/guru/${other._ID}`}>Lihat Profil</Link>
-                                    </Button>
-                                </div>
-                            </div>
+                            <TeacherCard key={other._ID} teacher={other} showProfile />
                         ))}
                     </div>
                 </Section>

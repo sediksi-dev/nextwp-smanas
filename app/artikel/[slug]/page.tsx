@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { Calendar, ChevronLeft, ChevronRight, Clock, Tag } from "lucide-react";
+import { Calendar, Clock, Tag } from "lucide-react";
 import {
     getPostBySlug,
     getLatestPosts,
@@ -17,9 +17,8 @@ import { Section } from "@/components/layout/section";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { mockPosts } from "@/lib/mock/posts";
-
-const IMAGE_PLACEHOLDER =
-    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='450' viewBox='0 0 800 450'%3E%3Crect width='800' height='450' fill='%23e8f4fb'/%3E%3Crect x='300' y='135' width='200' height='160' rx='16' fill='%2329abe2' opacity='.2'/%3E%3Ccircle cx='400' cy='195' r='44' fill='%2329abe2' opacity='.3'/%3E%3Cpath d='M310 315 l60-80 50 60 36-40 94 60z' fill='%2329abe2' opacity='.15'/%3E%3C/svg%3E";
+import { ArtikelNav } from "../_components/artikel-nav";
+import { RelatedArtikelCard } from "../_components/related-artikel-card";
 
 function estimateReadTime(html: string): number {
     const text = html.replace(/<[^>]+>/g, "");
@@ -175,47 +174,10 @@ export default async function ArtikelDetailPage({ params }: Props) {
                     )}
 
                     {/* ── Prev / Next navigation ───────────────────────────── */}
-                    {(prevPost ?? nextPost) && (
-                        <nav
-                            aria-label="Navigasi artikel"
-                            className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-10 pt-6 border-t border-border"
-                        >
-                            {prevPost ? (
-                                <Link
-                                    href={`/artikel/${prevPost.slug}`}
-                                    className="surface flex flex-col gap-1 p-4 rounded-xl group hover:border-site-primary transition-colors"
-                                >
-                                    <span className="flex items-center gap-1 text-xs text-muted-foreground font-semibold uppercase tracking-wide">
-                                        <ChevronLeft className="w-3.5 h-3.5" />
-                                        Sebelumnya
-                                    </span>
-                                    <span
-                                        className="text-sm font-bold leading-snug text-foreground group-hover:text-site-primary transition-colors line-clamp-2 mt-0.5"
-                                        dangerouslySetInnerHTML={{ __html: prevPost.title.rendered }}
-                                    />
-                                </Link>
-                            ) : (
-                                <div />
-                            )}
-                            {nextPost ? (
-                                <Link
-                                    href={`/artikel/${nextPost.slug}`}
-                                    className="surface flex flex-col gap-1 p-4 rounded-xl group text-right hover:border-site-primary transition-colors"
-                                >
-                                    <span className="flex items-center justify-end gap-1 text-xs text-muted-foreground font-semibold uppercase tracking-wide">
-                                        Selanjutnya
-                                        <ChevronRight className="w-3.5 h-3.5" />
-                                    </span>
-                                    <span
-                                        className="text-sm font-bold leading-snug text-foreground group-hover:text-site-primary transition-colors line-clamp-2 mt-0.5"
-                                        dangerouslySetInnerHTML={{ __html: nextPost.title.rendered }}
-                                    />
-                                </Link>
-                            ) : (
-                                <div />
-                            )}
-                        </nav>
-                    )}
+                    <ArtikelNav
+                        prev={prevPost ? { slug: prevPost.slug, title: prevPost.title.rendered } : null}
+                        next={nextPost ? { slug: nextPost.slug, title: nextPost.title.rendered } : null}
+                    />
 
                     {/* ── Back button ──────────────────────────────────────── */}
                     <div className="mt-8">
@@ -243,38 +205,15 @@ export default async function ArtikelDetailPage({ params }: Props) {
                                 relPost.categories.includes(c.id),
                             );
                             return (
-                                <Link
+                                <RelatedArtikelCard
                                     key={relPost.slug}
                                     href={`/artikel/${relPost.slug}`}
-                                    className="surface flex flex-col overflow-hidden group"
-                                >
-                                    <div className="relative aspect-video w-full overflow-hidden">
-                                        <Image
-                                            src={relImg ?? IMAGE_PLACEHOLDER}
-                                            alt={relTitle}
-                                            fill
-                                            className="object-cover transition-transform duration-500 group-hover:scale-105"
-                                            sizes="(max-width: 640px) 100vw, 33vw"
-                                        />
-                                    </div>
-                                    <div className="flex flex-col gap-1.5 p-4 flex-1">
-                                        {relCategories.length > 0 && (
-                                            <span className="text-xs font-bold tracking-wider uppercase text-site-primary">
-                                                {relCategories[0].name}
-                                            </span>
-                                        )}
-                                        <h3
-                                            className="font-bold text-sm leading-snug group-hover:text-site-primary transition-colors line-clamp-2"
-                                            dangerouslySetInnerHTML={{ __html: relTitle }}
-                                        />
-                                        <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
-                                            {relExcerpt}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground mt-auto pt-2 border-t border-border">
-                                            {relDate}
-                                        </p>
-                                    </div>
-                                </Link>
+                                    title={relTitle}
+                                    excerpt={relExcerpt}
+                                    date={relDate}
+                                    imageUrl={relImg}
+                                    categoryName={relCategories[0]?.name}
+                                />
                             );
                         })}
                     </div>

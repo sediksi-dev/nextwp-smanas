@@ -3,6 +3,7 @@ import { PageWrap } from "@/components/layout/page-wrap";
 import PageHeading from "@/components/elements/page-heading";
 import { getProfilesConfig } from "@/lib/wordpress";
 import { parseHtmlContent } from "@/lib/utils";
+import { MisiList, TujuanList } from "./_components/visi-misi-items";
 
 export const metadata = {
     title: "Visi & Misi",
@@ -49,36 +50,14 @@ export default async function VisiMisiPage() {
                     <div>
                         <p className="text-xs font-bold tracking-widest uppercase text-site-accent mb-1">Misi</p>
                         <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">Misi Sekolah</h2>
-                        <ol className="flex flex-col divide-y divide-border list-none p-0 m-0">
-                            {misi.map((item, i) => (
-                                <li key={i} className="flex gap-3 items-start py-3 first:pt-0 last:pb-0">
-                                    <span className="shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-bold tabular-nums text-site-primary">
-                                        {String(i + 1).padStart(2, "0")}
-                                    </span>
-                                    <span className="text-sm md:text-base leading-relaxed text-foreground/80 pt-1">
-                                        {item}
-                                    </span>
-                                </li>
-                            ))}
-                        </ol>
+                        <MisiList items={misi} />
                     </div>
 
                     {/* Tujuan */}
                     <div>
                         <p className="text-xs font-bold tracking-widest uppercase text-site-accent mb-1">Tujuan</p>
                         <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">Tujuan Sekolah</h2>
-                        <div className="flex flex-col gap-4">
-                            {tujuan.map((item, i) => (
-                                <div key={i} className="rounded-xl border border-site-border bg-secondary/30 p-4 flex flex-col gap-1.5">
-                                    <span className="text-4xl font-extrabold leading-none tabular-nums text-site-accent">
-                                        {String(i + 1).padStart(2, "0")}
-                                    </span>
-                                    <p className="text-sm md:text-base leading-relaxed text-foreground/80">
-                                        {item}
-                                    </p>
-                                </div>
-                            ))}
-                        </div>
+                        <TujuanList items={tujuan} />
                     </div>
 
                 </div>

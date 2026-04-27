@@ -8,6 +8,8 @@ import { PageWrap } from "@/components/layout/page-wrap";
 import PageHeading from "@/components/elements/page-heading";
 import { getCategories, getCategoryBySlug, getAllPostsPaginated, getPostsByCategoryPaginated, getMediaById } from "@/lib/wordpress";
 import { ArtikelSearch } from "./_components/artikel-search";
+import { ViewToggle } from "./_components/view-toggle";
+import { PostGridCard } from "./_components/post-grid-card";
 
 const IMAGE_PLACEHOLDER =
     "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23e8f4fb'/%3E%3Crect x='150' y='90' width='100' height='80' rx='8' fill='%2329abe2' opacity='.25'/%3E%3Ccircle cx='200' cy='120' r='22' fill='%2329abe2' opacity='.35'/%3E%3Cpath d='M160 170 l30-40 25 30 18-20 47 30z' fill='%2329abe2' opacity='.2'/%3E%3C/svg%3E";
@@ -122,34 +124,11 @@ export default async function ArtikelPage({
                         <ArtikelSearch defaultValue={q} kategori={kategori} />
                     </Suspense>
                     {/* View toggle */}
-                    <div className="flex gap-1 bg-white border border-border rounded-full p-1 self-start">
-                        <Link
-                            href={buildViewHref(kategori, q, currentPage, "grid")}
-                            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-colors ${viewMode === "grid" ? "bg-site-primary text-white" : "text-muted-foreground hover:text-foreground"}`}
-                        >
-                            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
-                                <rect x="1" y="1" width="6" height="6" rx="1" />
-                                <rect x="9" y="1" width="6" height="6" rx="1" />
-                                <rect x="1" y="9" width="6" height="6" rx="1" />
-                                <rect x="9" y="9" width="6" height="6" rx="1" />
-                            </svg>
-                            Grid
-                        </Link>
-                        <Link
-                            href={buildViewHref(kategori, q, currentPage, "list")}
-                            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-colors ${viewMode === "list" ? "bg-site-primary text-white" : "text-muted-foreground hover:text-foreground"}`}
-                        >
-                            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
-                                <rect x="1" y="1" width="4" height="4" rx="0.5" />
-                                <rect x="7" y="2" width="8" height="2" rx="1" />
-                                <rect x="1" y="6.5" width="4" height="4" rx="0.5" />
-                                <rect x="7" y="7.5" width="8" height="2" rx="1" />
-                                <rect x="1" y="12" width="4" height="4" rx="0.5" />
-                                <rect x="7" y="13" width="8" height="2" rx="1" />
-                            </svg>
-                            List
-                        </Link>
-                    </div>
+                    <ViewToggle
+                        viewMode={viewMode}
+                        gridHref={buildViewHref(kategori, q, currentPage, "grid")}
+                        listHref={buildViewHref(kategori, q, currentPage, "list")}
+                    />
                 </div>
 
                 {/* Posts */}
@@ -220,36 +199,15 @@ export default async function ArtikelPage({
                                 year: "numeric",
                             });
                             return (
-                                <article key={post.id} className="surface flex flex-col overflow-hidden">
-                                    <div className="relative aspect-video w-full overflow-hidden">
-                                        <Image
-                                            src={src}
-                                            alt={post.title.rendered}
-                                            fill
-                                            className="object-cover transition-transform duration-300 hover:scale-105"
-                                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                                        />
-                                    </div>
-                                    <div className="flex flex-1 flex-col gap-3 p-5">
-                                        <div className="flex items-center gap-2">
-                                            <Badge variant="secondary" className="text-xs">
-                                                {categoryName || "Artikel"}
-                                            </Badge>
-                                            <span className="text-xs text-muted-foreground">{date}</span>
-                                        </div>
-                                        <h2
-                                            className="font-bold leading-snug"
-                                            dangerouslySetInnerHTML={{ __html: post.title.rendered }}
-                                        />
-                                        <div
-                                            className="text-sm text-muted-foreground line-clamp-2"
-                                            dangerouslySetInnerHTML={{ __html: post.excerpt.rendered }}
-                                        />
-                                        <Button asChild variant="link" size="sm" className="mt-auto self-start px-0">
-                                            <Link href={`/artikel/${post.slug}`}>Baca selengkapnya &rarr;</Link>
-                                        </Button>
-                                    </div>
-                                </article>
+                                <PostGridCard
+                                    key={post.id}
+                                    title={post.title.rendered}
+                                    excerpt={post.excerpt.rendered}
+                                    href={`/artikel/${post.slug}`}
+                                    imageUrl={src}
+                                    date={date}
+                                    categoryName={categoryName || "Artikel"}
+                                />
                             );
                         })}
                     </div>

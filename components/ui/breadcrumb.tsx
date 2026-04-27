@@ -20,7 +20,7 @@ const Breadcrumb = ({ items }: { items: BreadcrumbItemData[] }) => (
                             </a>
                         ) : (
                             <span
-                                className="font-medium text-foreground truncate max-w-[9rem] sm:max-w-xs md:max-w-none"
+                                className="font-medium text-foreground truncate max-w-36 sm:max-w-xs md:max-w-none"
                                 title={item.label}
                             >
                                 {item.label}
