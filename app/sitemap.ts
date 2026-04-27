@@ -1,6 +1,5 @@
 import type { MetadataRoute } from "next";
-import { mockPosts } from "@/lib/mock/posts";
-import { getPpdbList } from "@/lib/wordpress";
+import { getPpdbList, getAllPostsPaginated } from "@/lib/wordpress";
 
 const BASE_URL = "https://smanasionalmalang.sch.id";
 
@@ -21,15 +20,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         { url: `${BASE_URL}/kontak`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.6 },
     ];
 
-    const [ppdbList, articleRoutes] = await Promise.all([
+    const [ppdbList, articlesResult] = await Promise.all([
         getPpdbList(50),
-        Promise.resolve(mockPosts.map((post) => ({
-            url: `${BASE_URL}/artikel/${post.slug}`,
-            lastModified: new Date(post.date),
-            changeFrequency: "monthly" as const,
-            priority: 0.7,
-        }))),
+        getAllPostsPaginated(1, 100),
     ]);
+
+    const articleRoutes: MetadataRoute.Sitemap = articlesResult.posts.map((post) => ({
+        url: `${BASE_URL}/artikel/${post.slug}`,
+        lastModified: new Date(post.date),
+        changeFrequency: "monthly" as const,
+        priority: 0.7,
+    }));
 
     const ppdbRoutes: MetadataRoute.Sitemap = ppdbList.flatMap((p) => [
         {

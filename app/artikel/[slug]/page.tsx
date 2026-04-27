@@ -16,7 +16,6 @@ import { PageWrap } from "@/components/layout/page-wrap";
 import { Section } from "@/components/layout/section";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { mockPosts } from "@/lib/mock/posts";
 import { ArtikelNav } from "../_components/artikel-nav";
 import { RelatedArtikelCard } from "../_components/related-artikel-card";
 
@@ -31,7 +30,7 @@ interface Props {
 }
 
 export async function generateStaticParams() {
-    return mockPosts.map((p) => ({ slug: p.slug }));
+    return [];
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -73,17 +72,15 @@ export default async function ArtikelDetailPage({ params }: Props) {
 
     const postCategories = allCategories.filter((c) => post.categories.includes(c.id));
 
-    // Featured image: WP API first, then mock fallback
-    const mockPost = mockPosts.find((p) => p.slug === slug);
-    const imageUrl = featuredImage?.source_url ?? mockPost?.image ?? null;
+    // Featured image
+    const imageUrl = featuredImage?.source_url ?? null;
 
     // Related posts: latest excluding current, fetch their images in parallel
     const related = latestPosts.filter((p) => p.slug !== slug).slice(0, 3);
     const relatedWithImages = await Promise.all(
         related.map(async (p) => {
             const img = p.featured_media > 0 ? await getMediaById(p.featured_media) : null;
-            const mockImg = mockPosts.find((m) => m.slug === p.slug)?.image ?? null;
-            return { post: p, imageUrl: img?.source_url ?? mockImg };
+            return { post: p, imageUrl: img?.source_url ?? null };
         }),
     );
 

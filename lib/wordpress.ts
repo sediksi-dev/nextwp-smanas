@@ -1,8 +1,4 @@
 import "server-only";
-import { mockPosts } from "@/lib/mock/posts";
-import { mockTeachers, type StaffMember } from "@/lib/mock/teachers";
-import { mockAchievements } from "@/lib/mock/achievements";
-import { mockGallery, type GalleryPhoto } from "@/lib/mock/gallery";
 import type {
     Achievement,
     AchievementScope,
@@ -82,10 +78,7 @@ async function wpFetchWithMeta<T>(
 
 export async function getLatestPosts(limit = 6) {
     const data = await wpFetch<WpPost[]>(`posts?per_page=${limit}`);
-    if (data === null) {
-        return mockPosts.slice(0, limit).map(toWpPost);
-    }
-    return data;
+    return data ?? [];
 }
 
 export async function getPostsByCategory(category: string, limit = 12) {
@@ -93,24 +86,14 @@ export async function getPostsByCategory(category: string, limit = 12) {
     const data = await wpFetch<WpPost[]>(
         `posts?categories=${encoded}&per_page=${limit}`,
     );
-    if (data === null) {
-        return mockPosts
-            .filter((p) => p.category === category)
-            .slice(0, limit)
-            .map(toWpPost);
-    }
-    return data;
+    return data ?? [];
 }
 
 export async function getAllPosts(page = 1, perPage = 12) {
     const data = await wpFetch<WpPost[]>(
         `posts?per_page=${perPage}&page=${page}`,
     );
-    if (data === null) {
-        const start = (page - 1) * perPage;
-        return mockPosts.slice(start, start + perPage).map(toWpPost);
-    }
-    return data;
+    return data ?? [];
 }
 
 export async function getAllPostsPaginated(
@@ -129,19 +112,7 @@ export async function getAllPostsPaginated(
     );
 
     if (data === null) {
-        const searchLower = search.toLowerCase();
-        const filtered = mockPosts
-            .map(toWpPost)
-            .filter(
-                (p) =>
-                    searchLower.length === 0 ||
-                    p.title.rendered.toLowerCase().includes(searchLower) ||
-                    p.excerpt.rendered.toLowerCase().includes(searchLower),
-            );
-        const mockTotal = filtered.length;
-        const mockTotalPages = Math.max(1, Math.ceil(mockTotal / perPage));
-        const start = (page - 1) * perPage;
-        return { posts: filtered.slice(start, start + perPage), total: mockTotal, totalPages: mockTotalPages };
+        return { posts: [], total: 0, totalPages: 0 };
     }
 
     return { posts: data, total, totalPages };
@@ -151,48 +122,22 @@ export async function getPostBySlug(slug: string) {
     const data = await wpFetch<WpPost[]>(
         `posts?slug=${encodeURIComponent(slug)}&per_page=1`,
     );
-    if (data === null || data.length === 0) {
-        const fallback = mockPosts.find((p) => p.slug === slug);
-        if (fallback === undefined) return null;
-        return toWpPost(fallback);
-    }
+    if (data === null || data.length === 0) return null;
     return data[0];
 }
 
 // ── Categories ─────────────────────────────────────────────────────────────────────────
 
-/** Mock categories derived from mockPosts */
-const MOCK_CATEGORIES: WpCategory[] = Array.from(
-    new Map(
-        mockPosts.map((p, i) => [
-            p.category,
-            {
-                id: i + 1,
-                count: mockPosts.filter((x) => x.category === p.category).length,
-                description: "",
-                link: `/category/${p.category.toLowerCase().replace(/\s+/g, "-")}`,
-                name: p.category,
-                slug: p.category.toLowerCase().replace(/\s+/g, "-"),
-                taxonomy: "category",
-                parent: 0,
-            } satisfies WpCategory,
-        ]),
-    ).values(),
-);
-
 export async function getCategories(): Promise<WpCategory[]> {
     const data = await wpFetch<WpCategory[]>("categories?per_page=100&hide_empty=true");
-    if (data === null || data.length === 0) return MOCK_CATEGORIES;
-    return data;
+    return data ?? [];
 }
 
 export async function getCategoryBySlug(slug: string): Promise<WpCategory | null> {
     const data = await wpFetch<WpCategory[]>(
         `categories?slug=${encodeURIComponent(slug)}&per_page=1`,
     );
-    if (data === null || data.length === 0) {
-        return MOCK_CATEGORIES.find((c) => c.slug === slug) ?? null;
-    }
+    if (data === null || data.length === 0) return null;
     return data[0];
 }
 
@@ -215,20 +160,7 @@ export async function getPostsByCategoryPaginated(
     );
 
     if (data === null) {
-        const searchLower = search.toLowerCase();
-        const filtered = mockPosts
-            .filter((p) => p.category.toLowerCase().replace(/\s+/g, "-") === categorySlug)
-            .filter(
-                (p) =>
-                    searchLower.length === 0 ||
-                    p.title.toLowerCase().includes(searchLower) ||
-                    p.excerpt.toLowerCase().includes(searchLower),
-            );
-        const mockTotal = filtered.length;
-        const mockTotalPages = Math.max(1, Math.ceil(mockTotal / perPage));
-        const start = (page - 1) * perPage;
-        const posts = filtered.slice(start, start + perPage).map(toWpPost);
-        return { posts, total: mockTotal, totalPages: mockTotalPages };
+        return { posts: [], total: 0, totalPages: 0 };
     }
 
     return { posts: data, total, totalPages };
@@ -238,18 +170,7 @@ export async function getPostsByCategoryPaginated(
 
 export async function getAchievementsWithImage() {
     const data = await wpFetch<Achievement[]>("prestasi-with-image", "smanas/v1");
-    if (data === null || data.length === 0) {
-        const fallback = mockAchievements.filter((a) => a.image).map((a) => ({
-            _ID: Number(a._ID),
-            title: a.title,
-            scope: a.scope,
-            year: Number(a.year),
-            awardee: a.awardee,
-            image: a.image!,
-            host: a.host,
-        })) as Achievement[];
-        return fallback;
-    }
+    if (data === null || data.length === 0) return [];
 
     data.sort((a, b) => {
         if (b.year !== a.year) {
@@ -272,19 +193,7 @@ export async function getAllAchievements(year?: number, scope?: AchievementScope
     const endpoint = query ? `awards?${query}` : "awards";
 
     const data = await wpFetch<Array<Achievement>>(endpoint, "jet-cct");
-    if (data === null) {
-        let filtered = mockAchievements;
-        if (year) filtered = filtered.filter(a => String(a.year) === String(year));
-        if (scope) filtered = filtered.filter(a => a.scope === scope);
-        if (page && per_page) {
-            const start = (page - 1) * per_page;
-            filtered = filtered.slice(start, start + per_page);
-        } else if (per_page) {
-            filtered = filtered.slice(0, per_page);
-        }
-        return filtered;
-    }
-    return data;
+    return data ?? [];
 }
 
 // ── Gallery ───────────────────────────────────────────────────────────────────────────────
@@ -311,29 +220,9 @@ export function parseGalleryPhotos(raw: string): string[] {
         .filter((url) => url.startsWith("http"));
 }
 
-function toWpGalleryItem(item: GalleryPhoto, id: number): WpGalleryItem {
-    return {
-        _ID: String(id),
-        gallery_title: item.title,
-        gallery_description: item.caption ?? "",
-        gallery_photos: item.image,
-        cct_status: "publish",
-        cct_author_id: "1",
-        cct_created: "",
-        cct_modified: "",
-        cct_slug: "gallery",
-    };
-}
-
 export async function getGalleryItemsPreview(limit = 6): Promise<WpGalleryItem[]> {
     const data = await wpFetch<WpGalleryItem[]>(`gallery?_limit=${limit}`, "jet-cct");
-    if (data === null || data.length === 0) {
-        return mockGallery
-            .filter((g): g is GalleryPhoto => g.type === "Foto")
-            .slice(0, limit)
-            .map((g, i) => toWpGalleryItem(g, i + 1));
-    }
-    return data;
+    return data ?? [];
 }
 
 export async function getGalleryItemsPaginated(
@@ -351,13 +240,7 @@ export async function getGalleryItemsPaginated(
         "jet-cct",
     );
     if (data === null) {
-        const allPhotos = mockGallery
-            .filter((g): g is GalleryPhoto => g.type === "Foto")
-            .map((g, i) => toWpGalleryItem(g, i + 1));
-        const mockTotal = allPhotos.length;
-        const mockTotalPages = Math.max(1, Math.ceil(mockTotal / perPage));
-        const start = (page - 1) * perPage;
-        return { items: allPhotos.slice(start, start + perPage), total: mockTotal, totalPages: mockTotalPages };
+        return { items: [], total: 0, totalPages: 0 };
     }
     // Use real header totals if available
     if (totalPages > 0) {
@@ -375,65 +258,20 @@ export async function getGalleryItemsPaginated(
 
 export async function getGalleryItemById(id: string | number): Promise<WpGalleryItem | null> {
     const data = await wpFetch<WpGalleryItem>(`gallery/${id}`, "jet-cct");
-    if (data === null) {
-        const photos = mockGallery.filter((g): g is GalleryPhoto => g.type === "Foto");
-        const found = photos[Number(id) - 1];
-        if (found === undefined) return null;
-        return toWpGalleryItem(found, Number(id));
-    }
     return data;
 }
 
 // ── Teachers ───────────────────────────────────────────────────────────────────────────────
 
-function inferMockCategory(t: StaffMember): TeacherCategory {
-    const j = t.jabatan.toLowerCase();
-    if (j.includes("kepala sekolah")) return "kepsek";
-    if (j.includes("wakasek") || j.includes("wakil")) return "wakasek";
-    if (t.type === "guru") return "guru";
-    return "staf";
-}
-
-function toWpTeacher(t: StaffMember, id: number): WpTeacher {
-    return {
-        _ID: String(id),
-        name: t.name,
-        role: t.jabatan,
-        category: inferMockCategory(t),
-        motto: t.motto,
-        birthplace: t.birthPlace,
-        birthdate: t.birthDate,
-        email: t.email,
-        photo: t.photo,
-        nuptk: t.nuptk,
-        cct_status: "publish",
-        cct_author_id: "1",
-        cct_created: "",
-        cct_modified: "",
-        cct_slug: "teachers",
-    };
-}
-
 export async function getTeachers(category?: TeacherCategory, limit = 100): Promise<WpTeacher[]> {
     const params = new URLSearchParams({ _limit: String(limit) });
     if (category) params.set("category", category);
     const data = await wpFetch<WpTeacher[]>(`teachers?${params.toString()}`, "jet-cct");
-    if (data === null || data.length === 0) {
-        return mockTeachers
-            .map((t, i) => toWpTeacher(t, i + 1))
-            .filter((t) => category === undefined || t.category === category);
-    }
-    return data;
+    return data ?? [];
 }
 
 export async function getTeacherById(id: string | number): Promise<WpTeacher | null> {
     const data = await wpFetch<WpTeacher>(`teachers/${id}`, "jet-cct");
-    if (data === null) {
-        const idx = Number(id) - 1;
-        const found = mockTeachers[idx];
-        if (found === undefined) return null;
-        return toWpTeacher(found, Number(id));
-    }
     return data;
 }
 
@@ -451,31 +289,19 @@ export async function getProfilesConfig() {
 
 // ── PPDB (custom post type) ──────────────────────────────────────────────────────────────────────
 
-/** Import mock data lazily so server-only module doesn't bloat client tree-shake */
-const mockPpdb = (): WpPpdbItem[] => {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    return require("@/lib/mock/ppdb-mock.json") as WpPpdbItem[];
-};
-
 export async function getPpdbById(id: number): Promise<WpPpdbItem | null> {
     const data = await wpFetch<WpPpdbItem>(`ppdb/${id}`);
-    if (data === null) {
-        return mockPpdb().find((p) => p.id === id) ?? null;
-    }
     return data;
 }
 
 export async function getPpdbList(limit = 10): Promise<WpPpdbItem[]> {
     const data = await wpFetch<WpPpdbItem[]>(`ppdb?per_page=${limit}&orderby=date&order=desc`);
-    if (data === null) return mockPpdb().slice(0, limit);
-    return data;
+    return data ?? [];
 }
 
 export async function getPpdbBySlug(slug: string): Promise<WpPpdbItem | null> {
     const data = await wpFetch<WpPpdbItem[]>(`ppdb?slug=${encodeURIComponent(slug)}&per_page=1`);
-    if (data === null || data.length === 0) {
-        return mockPpdb().find((p) => p.slug === slug) ?? null;
-    }
+    if (data === null || data.length === 0) return null;
     return data[0];
 }
 
@@ -533,14 +359,7 @@ export async function getNextPost(date: string): Promise<WpPost | null> {
     const data = await wpFetch<WpPost[]>(
         `posts?after=${encodeURIComponent(date)}&per_page=1&order=asc`,
     );
-    if (data === null || data.length === 0) {
-        const sorted = [...mockPosts].sort(
-            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-        );
-        const idx = sorted.findIndex((p) => p.date === date);
-        if (idx === -1 || idx === sorted.length - 1) return null;
-        return toWpPost(sorted[idx + 1]);
-    }
+    if (data === null || data.length === 0) return null;
     return data[0];
 }
 
@@ -549,46 +368,8 @@ export async function getPrevPost(date: string): Promise<WpPost | null> {
     const data = await wpFetch<WpPost[]>(
         `posts?before=${encodeURIComponent(date)}&per_page=1&order=desc`,
     );
-    if (data === null || data.length === 0) {
-        const sorted = [...mockPosts].sort(
-            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-        );
-        const idx = sorted.findIndex((p) => p.date === date);
-        if (idx === -1 || idx === sorted.length - 1) return null;
-        return toWpPost(sorted[idx + 1]);
-    }
+    if (data === null || data.length === 0) return null;
     return data[0];
 }
 
-// ── Helpers ─────────────────────────────────────────────────────────────────────────────────
 
-function toWpPost(item: (typeof mockPosts)[number]): WpPost {
-    return {
-        id: item.id,
-        slug: item.slug,
-        date: item.date,
-        title: { rendered: item.title },
-        excerpt: { rendered: item.excerpt, protected: false },
-        content: { rendered: item.content, protected: false },
-        date_gmt: "",
-        guid: { rendered: "" },
-        modified: "",
-        modified_gmt: "",
-        status: "publish",
-        type: "post",
-        link: "",
-        author: 0,
-        featured_media: 0,
-        comment_status: "open",
-        ping_status: "open",
-        sticky: false,
-        template: "",
-        format: "",
-        meta: {
-            footnotes: "",
-        },
-        categories: [],
-        tags: [],
-        class_list: [],
-    } satisfies WpPost;
-}
