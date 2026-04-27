@@ -7,7 +7,7 @@ import PageHeading from "@/components/elements/page-heading";
 import { Button } from "@/components/ui/button";
 import { getCategoryBySlug, getPostsByCategoryPaginated, getMediaById } from "@/lib/wordpress";
 import { CategorySearch } from "./_components/category-search";
-import { PostGridCard } from "@/app/artikel/_components/post-grid-card";
+import { PostGridCard } from "@/app/(direktori)/artikel/_components/post-grid-card";
 
 const PER_PAGE = 12;
 
