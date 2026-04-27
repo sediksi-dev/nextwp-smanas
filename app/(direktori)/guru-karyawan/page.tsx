@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getTeachers } from "@/lib/wordpress";
 import type { WpTeacher, TeacherCategory } from "@/types/wordpress";
 import { PageWrap } from "@/components/layout/page-wrap";
@@ -14,6 +15,11 @@ const CATEGORY_LABELS: Record<TeacherCategory, string> = {
 
 const CATEGORY_ORDER: TeacherCategory[] = ["kepsek", "wakasek", "guru", "staf"];
 const HAS_PROFILE = new Set<TeacherCategory>(["kepsek", "wakasek", "guru"]);
+
+export const metadata: Metadata = {
+    title: "Guru & Karyawan | SMA Nasional Malang",
+    description: "Tenaga pendidik dan kependidikan SMA Nasional Malang.",
+};
 
 export default async function GuruKaryawanPage() {
     const allTeachers = await getTeachers();

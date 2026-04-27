@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getGalleryItemsPaginated } from "@/lib/wordpress";
@@ -9,7 +10,7 @@ import { GalleryGrid } from "./_components/gallery-grid";
 
 export const revalidate = 3600;
 
-export const metadata = {
+export const metadata: Metadata = {
     title: "Galeri Foto",
     description: "Kumpulan foto dokumentasi kegiatan SMA Nasional Malang.",
 };

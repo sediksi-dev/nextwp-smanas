@@ -1,12 +1,14 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Section } from "@/components/layout/section";
 import { PageWrap } from "@/components/layout/page-wrap";
+import PageHeading from "@/components/elements/page-heading";
 import { getPpdbById, getPpdbList, getSiteConfig } from "@/lib/wordpress";
 import { PpdbEmptyState } from "./_components/ppdb-empty-state";
 
-export const metadata = {
+export const metadata: Metadata = {
     title: "PPDB | SMA Nasional Malang",
     description: "Informasi Penerimaan Peserta Didik Baru (PPDB) SMA Nasional Malang.",
 };
@@ -24,16 +26,12 @@ export default async function PpdbPage() {
 
     return (
         <PageWrap breadcrumb={[{ label: "Beranda", href: "/" }, { label: "PPDB" }]}>
+            <PageHeading
+                title="PPDB SMA Nasional Malang"
+                subtitle="Penerimaan Peserta Didik Baru"
+                description="Informasi Penerimaan Peserta Didik Baru SMA Nasional Malang."
+            />
             <Section py="sm">
-                <div className="flex items-center gap-2 mb-3 max-w-3xl mx-auto">
-                    <span className="block w-5 h-0.5 bg-site-accent" />
-                    <p className="text-xs font-bold tracking-widest uppercase text-site-primary">
-                        Penerimaan Peserta Didik Baru
-                    </p>
-                </div>
-                <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-foreground leading-tight max-w-3xl mx-auto">
-                    PPDB SMA Nasional Malang
-                </h1>
 
                 {active ? (
                     <div className="mt-8 flex flex-col gap-6 max-w-3xl mx-auto">

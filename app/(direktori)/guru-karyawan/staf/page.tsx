@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import { getTeachers } from "@/lib/wordpress";
 import { PageWrap } from "@/components/layout/page-wrap";
 import { Section } from "@/components/layout/section";
 import PageHeading from "@/components/elements/page-heading";
 import { TeacherCard } from "../_components/teacher-card";
+
+export const metadata: Metadata = {
+    title: "Tenaga Kependidikan | SMA Nasional Malang",
+    description: "Tenaga kependidikan SMA Nasional Malang yang berdedikasi.",
+};
 
 export default async function StafPage() {
     const staff = await getTeachers("staf");

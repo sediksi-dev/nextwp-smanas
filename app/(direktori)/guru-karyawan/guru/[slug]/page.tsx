@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { ChevronLeft } from "lucide-react";
 import { getTeacherById, getTeachers } from "@/lib/wordpress";
 import { PageWrap } from "@/components/layout/page-wrap";
@@ -11,6 +12,23 @@ import { TeacherCard } from "../../_components/teacher-card";
 
 interface Props {
     params: Promise<{ slug: string }>;
+}
+
+export async function generateStaticParams() {
+    const teachers = await getTeachers();
+    return teachers
+        .filter((t) => t.category !== "staf")
+        .map((t) => ({ slug: String(t._ID) }));
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { slug: id } = await params;
+    const teacher = await getTeacherById(id);
+    if (!teacher) return { title: "Guru tidak ditemukan | SMA Nasional Malang" };
+    return {
+        title: `${teacher.name} | Guru & Karyawan | SMA Nasional Malang`,
+        description: `Profil ${teacher.name} — ${teacher.role || "Tenaga Pendidik"} SMA Nasional Malang.`,
+    };
 }
 
 export default async function GuruProfilPage({ params }: Props) {

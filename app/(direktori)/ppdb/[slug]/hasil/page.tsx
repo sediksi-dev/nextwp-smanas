@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import * as XLSX from "xlsx";
 
 import { getPpdbBySlug } from "@/lib/wordpress";
 import { PageWrap } from "@/components/layout/page-wrap";
 import { Section } from "@/components/layout/section";
 import { Button } from "@/components/ui/button";
 import { ResultsTable } from "./_components/results-table";
+import { fetchXlsx } from "./_components/fetch-xlsx";
 
 interface Props {
     params: Promise<{ slug: string }>;
@@ -24,20 +24,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 type Row = (string | number | boolean | null | undefined)[];
-
-async function fetchXlsx(url: string): Promise<Row[] | null> {
-    try {
-        const res = await fetch(url, { next: { revalidate: 1800 } });
-        if (!res.ok) return null;
-        const buffer = await res.arrayBuffer();
-        const wb = XLSX.read(buffer, { type: "array" });
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json<Row>(ws, { header: 1, defval: "" });
-        return rows as Row[];
-    } catch {
-        return null;
-    }
-}
 
 export default async function PpdbHasilPage({ params }: Props) {
     const { slug } = await params;

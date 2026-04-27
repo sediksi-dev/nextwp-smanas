@@ -2,11 +2,11 @@ import { Section } from "@/components/layout/section";
 import { PageWrap } from "@/components/layout/page-wrap";
 
 function SkeletonPill({ w = "w-16" }: { w?: string }) {
-    return <div className={`h-7 ${w} rounded-full bg-gray-200 animate-pulse`} />;
+    return <div className={`h-7 ${w} rounded-full shimmer`} />;
 }
 
 function SkeletonCard() {
-    return <div className="aspect-square rounded-xl bg-gray-200 animate-pulse" />;
+    return <div className="aspect-square rounded-xl shimmer" />;
 }
 
 export default function PrestasiLoading() {
@@ -15,9 +15,9 @@ export default function PrestasiLoading() {
             {/* Page heading skeleton */}
             <Section>
                 <div className="flex flex-col items-center gap-3">
-                    <div className="h-4 w-24 rounded-full bg-gray-200 animate-pulse" />
-                    <div className="h-9 w-64 rounded-lg bg-gray-200 animate-pulse" />
-                    <div className="h-4 w-96 max-w-full rounded-full bg-gray-200 animate-pulse" />
+                    <div className="h-4 w-24 rounded-full shimmer" />
+                    <div className="h-9 w-64 rounded-lg shimmer" />
+                    <div className="h-4 w-96 max-w-full rounded-full shimmer" />
                 </div>
             </Section>
 
@@ -26,8 +26,8 @@ export default function PrestasiLoading() {
                 <div className="flex flex-col gap-4">
                     {/* Search + view */}
                     <div className="flex flex-col sm:flex-row gap-3">
-                        <div className="h-10 flex-1 rounded-full bg-gray-200 animate-pulse" />
-                        <div className="h-10 w-36 rounded-full bg-gray-200 animate-pulse" />
+                        <div className="h-10 flex-1 rounded-full shimmer" />
+                        <div className="h-10 w-36 rounded-full shimmer" />
                     </div>
                     {/* Year pills */}
                     <div className="flex flex-wrap gap-2">

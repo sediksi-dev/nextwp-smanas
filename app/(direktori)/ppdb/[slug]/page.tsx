@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
@@ -68,12 +69,14 @@ export default async function PpdbDetailPage({ params }: Props) {
                         {/* Flyer (featured image) — natural dimensions, no crop */}
                         {flyer && (
                             <figure className="w-full mb-8 rounded-2xl overflow-hidden shadow-site border border-border">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img
+                                <Image
                                     src={flyer}
                                     alt={`Flyer PPDB ${year_open}`}
-                                    className="w-full h-auto block"
-                                    loading="eager"
+                                    width={800}
+                                    height={1100}
+                                    style={{ width: "100%", height: "auto" }}
+                                    priority
+                                    sizes="(max-width: 768px) 100vw, 672px"
                                 />
                             </figure>
                         )}
