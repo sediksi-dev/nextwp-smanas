@@ -96,10 +96,38 @@ Pakai basis 4px: `4, 8, 12, 16, 24, 32, 48, 64, 80`.
 - Surface/card: `rounded-2xl` atau `rounded-[--radius]` sesuai kebutuhan.
 - Button/pill: `rounded-full`.
 
-### B. Shadow
+### B. Radius scale (computed dari `--radius = 0.75rem`)
+
+| Token Tailwind               | Nilai                   | Kegunaan               |
+| ---------------------------- | ----------------------- | ---------------------- |
+| `rounded-sm` / `--radius-sm` | `0.5rem`                | Input, tag kecil       |
+| `rounded-md` / `--radius-md` | `0.625rem`              | Badge, chip            |
+| `rounded-lg` / `--radius-lg` | `0.75rem`               | Card default           |
+| `rounded-xl` / `--radius-xl` | `1rem`                  | Panel besar            |
+| `rounded-2xl`                | `1rem` (Tailwind scale) | Surface card           |
+| `rounded-[1.25rem]`          | `1.25rem`               | `.surface` (by design) |
+| `rounded-full`               | 9999px                  | Tombol, pill, avatar   |
+
+### C. Shadow
 
 - Shadow utama mengikuti `--site-shadow`.
+- Tailwind utility: `shadow-site` (terdaftar via `@theme inline` → `--shadow-site: var(--site-shadow)`).
 - Gunakan shadow lembut bernuansa biru; hindari shadow abu gelap pekat.
+
+### D. Dark Mode Tokens
+
+Dark mode mengikuti `.dark` class. Token semantic otomatis menyesuaikan:
+
+| Token          | Light                                 | Dark                                      |
+| -------------- | ------------------------------------- | ----------------------------------------- |
+| `--background` | `hsl(202 100% 98%)` — biru muda       | `hsl(210 72% 11%)` — biru gelap           |
+| `--foreground` | `hsl(210 100% 20%)` — navy            | `hsl(202 100% 97%)` — putih biru          |
+| `--card`       | `hsl(0 0% 100%)` — putih              | `hsl(210 58% 14%)` — biru surface         |
+| `--primary`    | `hsl(198 76% 52%)` — biru terang      | `hsl(198 76% 60%)` — sedikit lebih terang |
+| `--muted`      | `hsl(210 34% 95%)` — abu muda         | `hsl(210 30% 18%)` — abu gelap            |
+| `--border`     | `hsl(198 53% 88%)` — biru border muda | `hsl(210 34% 24%)` — border gelap         |
+
+> Token `--site-*` (brand) **tidak berubah** di dark mode — nilai mereka tetap konstan.
 
 ## 5. Component Inventory
 
@@ -167,4 +195,278 @@ Komponen berikut sudah mengikuti arah visual sistem dan jadi referensi implement
     <Button variant="outline">Pelajari Syarat</Button>
   </div>
 </section>
+```
+
+---
+
+## 9. Global Utility Classes (globals.css Inventory)
+
+Kelas-kelas berikut didefinisikan di `app/globals.css` dan menjadi bagian sistem. **Jangan re-implement** dengan class Tailwind ad-hoc kalau kelas ini tersedia.
+
+### Layout & Shell
+
+| Class        | Definisi                                                                  | Kegunaan                              |
+| ------------ | ------------------------------------------------------------------------- | ------------------------------------- |
+| `.container` | `width: min(1120px, 100% - 2rem); margin: 0 auto`                         | Wrapper lebar konten utama            |
+| `.page-wrap` | `flex flex-col gap-12 py-5 pb-16`                                         | Shell halaman isi (di dalam `<main>`) |
+| `.surface`   | `bg-site-surface border border-site-border rounded-[1.25rem] shadow-site` | Card/panel surface utama              |
+| `.section`   | `p-6`                                                                     | Padding standar konten dalam surface  |
+
+### Tipografi Sections
+
+| Class            | Definisi                                                      | Kegunaan                                |
+| ---------------- | ------------------------------------------------------------- | --------------------------------------- |
+| `.eyebrow`       | `text-site-primary font-bold tracking-[0.06em] uppercase`     | Label kecil sebelum judul section       |
+| `.section-title` | `font-size: clamp(1.2rem, 1.3vw + 1rem, 2rem); leading-tight` | Judul section responsif                 |
+| `.section-copy`  | `text-site-muted mt-3`                                        | Deskripsi pendek di bawah judul section |
+
+### Hero
+
+| Class           | Kegunaan                                                                           |
+| --------------- | ---------------------------------------------------------------------------------- |
+| `.hero`         | Wrapper hero section (`pt-3`)                                                      |
+| `.hero-grid`    | CSS Grid 2-kolom (`1.2fr 0.8fr`), jadi 1-kolom di ≤980px                           |
+| `.hero-title`   | Heading utama hero, `clamp(1.8rem, 3.2vw + 1rem, 3.6rem)`                          |
+| `.hero-copy`    | Body copy hero, max `55ch`                                                         |
+| `.hero-actions` | Flex wrap gap-3 untuk tombol CTA                                                   |
+| `.hero-panel`   | Panel gradient biru tua (kiri → kanan: `--site-primary` → `--site-primary-strong`) |
+| `.panel-kicker` | Teks label kuning di dalam `.hero-panel`                                           |
+
+### Buttons (HTML primitives)
+
+> Lebih disukai menggunakan `<Button>` dari `components/ui/button.tsx`. Kelas `.btn*` untuk kasus HTML murni.
+
+| Class            | Kegunaan                                                                           |
+| ---------------- | ---------------------------------------------------------------------------------- |
+| `.btn`           | Base button: `rounded-full border inline-flex font-bold min-h-11 px-4`             |
+| `.btn-primary`   | `bg-site-accent text-site-text`                                                    |
+| `.btn-secondary` | `bg-primary/10 border-site-border text-site-text`                                  |
+| `.pill`          | Label tag: `rounded-full border text-site-muted text-[0.85rem] font-semibold px-3` |
+
+### Card & Grid
+
+| Class     | Kegunaan                                                                                   |
+| --------- | ------------------------------------------------------------------------------------------ |
+| `.card`   | `bg-site-surface border border-site-border rounded-2xl p-4` — versi ringan dari `.surface` |
+| `.grid-3` | `grid grid-cols-3 gap-4`, jadi 1-kolom di ≤980px                                           |
+
+### Navigation
+
+| Class           | Kegunaan                                                            |
+| --------------- | ------------------------------------------------------------------- |
+| `.site-nav`     | Header sticky dengan `backdrop-blur-sm border-b border-site-border` |
+| `.site-nav-row` | Flex row header, `min-h-17.5`, responsive ke flex-col               |
+| `.site-links`   | Nav links horizontal, disembunyikan di ≤980px                       |
+| `.brand`        | Kolom nama sekolah + tagline di header                              |
+| `.menu-toggle`  | Tombol hamburger/drawer                                             |
+
+---
+
+## 10. Motion & Animation Patterns
+
+Komponen di `components/motion/` adalah wrapper Framer Motion yang **wajib dipakai** untuk animasi entrance. Jangan tulis animasi Framer Motion custom di komponen halaman.
+
+### FadeIn (`components/motion/fade-in.tsx`)
+
+Elemen fade-in saat memasuki viewport.
+
+```tsx
+import { FadeIn } from "@/components/motion/fade-in";
+
+<FadeIn>
+  <Card>...</Card>
+</FadeIn>
+
+// Props: delay?: number (detik, default 0)
+<FadeIn delay={0.2}>...</FadeIn>
+```
+
+### SlideUp (`components/motion/slide-up.tsx`)
+
+Elemen slide naik + fade-in saat memasuki viewport.
+
+```tsx
+import { SlideUp } from "@/components/motion/slide-up";
+
+<SlideUp delay={0.1}>
+  <Card>...</Card>
+</SlideUp>;
+
+// Props: delay?: number (default 0)
+```
+
+### StaggerContainer (`components/motion/stagger-container.tsx`)
+
+Grid atau list yang anak-anaknya animate secara berurutan (stagger).
+
+```tsx
+import { StaggerContainer } from "@/components/motion/stagger-container";
+import { SlideUp } from "@/components/motion/slide-up";
+
+<StaggerContainer className="grid grid-cols-3 gap-4">
+  {items.map((item, i) => (
+    <SlideUp key={item.id} delay={i * 0.05}>
+      <PostCard post={item} />
+    </SlideUp>
+  ))}
+</StaggerContainer>;
+```
+
+### PageTransition (`components/motion/page-transition.tsx`)
+
+Dipakai di root layout untuk animasi transisi antar halaman. **Tidak perlu dipakai di dalam halaman.**
+
+### Aturan Animasi
+
+- Gunakan motion **hanya untuk entrance animations** (scroll into view). Jangan pakai untuk interaksi hover — gunakan Tailwind `transition-*` untuk itu.
+- Jangan gunakan `useAnimation` atau `useMotionValue` di komponen halaman; buat motion component terpisah jika diperlukan.
+- Delay maksimum per item dalam stagger: `0.15s`. Jangan membuat list terlalu lambat.
+
+---
+
+## 11. Loading & Skeleton Patterns
+
+Setiap halaman **wajib** memiliki `loading.tsx` di folder yang sama. Gunakan `Skeleton` dari `components/ui/skeleton.tsx`.
+
+### Pola loading.tsx standar
+
+```tsx
+// app/(group)/my-page/loading.tsx
+import { Skeleton } from "@/components/ui/skeleton";
+
+export default function Loading() {
+  return (
+    <div className="container page-wrap">
+      {/* Heading placeholder */}
+      <div className="mb-8">
+        <Skeleton className="h-5 w-24 mb-3" /> {/* eyebrow */}
+        <Skeleton className="h-10 w-72 mb-2" /> {/* title */}
+        <Skeleton className="h-4 w-96" /> {/* description */}
+      </div>
+      {/* Content grid placeholder */}
+      <div className="grid grid-cols-3 gap-4">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} className="h-64 rounded-2xl" />
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+### Skeleton variants tersedia
+
+`components/ui/skeleton.tsx` menyediakan:
+
+- `<Skeleton className="...">` — blok warna muted dengan shimmer animation
+- `<SkeletonText lines={3}>` — blok teks baris
+- `<SkeletonCard>` — kartu komplit dengan gambar + teks
+- `<SkeletonAvatar>` — avatar bulat
+
+### Aturan Loading UI
+
+- Skeleton harus mendekati layout konten asli (proporsi, jumlah item, grid columns).
+- Jangan pakai spinner tunggal untuk seluruh halaman — gunakan skeleton per elemen.
+- Gunakan `rounded-2xl` pada skeleton yang mewakili card/surface.
+
+---
+
+## 12. Page Composition Patterns
+
+### Shell standar halaman konten
+
+Setiap halaman non-beranda menggunakan pola ini:
+
+```tsx
+import { Metadata } from "next";
+import PageWrap from "@/components/layout/page-wrap";
+import { PageHeading } from "@/components/elements/page-heading";
+
+export const metadata: Metadata = {
+  title: "Nama Halaman | SMANAS",
+  description: "Deskripsi halaman.",
+};
+
+export default async function MyPage() {
+  const data = await fetchSomeData(); // dari lib/wordpress.ts
+
+  return (
+    <PageWrap
+      breadcrumbs={[
+        { label: "Beranda", href: "/" },
+        { label: "Nama Halaman", href: "/nama-halaman" },
+      ]}
+    >
+      <PageHeading
+        title="Judul Halaman"
+        description="Deskripsi pendek halaman ini."
+      />
+
+      {/* Konten utama */}
+      <section className="surface section">{/* ... */}</section>
+    </PageWrap>
+  );
+}
+```
+
+### SectionTitle variants
+
+`SectionTitle` dipakai di homepage sections. Di halaman isi, gunakan `PageHeading`.
+
+```tsx
+import { SectionTitle } from "@/components/elements/section-title";
+
+// variant "badge" — eyebrow dalam badge biru
+<SectionTitle eyebrow="GALERI" title="Foto Kegiatan" variant="badge" />
+
+// variant "underline" — garis bawah aksen
+<SectionTitle title="Visi Sekolah" variant="underline" />
+
+// variant "centered-bar" — bar aksen tengah, untuk hero-ish sections
+<SectionTitle eyebrow="PPDB 2025" title="Daftar Sekarang" variant="centered-bar" centered />
+
+// variant "left" — teks rata kiri, garis sisi kiri (aksen)
+<SectionTitle title="Struktur Organisasi" variant="left" />
+```
+
+### Sidebar pattern (halaman detail)
+
+Halaman dengan sidebar (seperti artikel detail, PPDB detail):
+
+```tsx
+<div className="grid gap-8 lg:grid-cols-[1fr_320px]">
+  {/* Main content */}
+  <article className="surface section prose max-w-none">{/* ... */}</article>
+
+  {/* Sidebar */}
+  <aside className="flex flex-col gap-5">
+    <div className="surface section">{/* sidebar content */}</div>
+  </aside>
+</div>
+```
+
+### ISR + metadata dynamic pattern
+
+Untuk halaman dengan dynamic metadata dari WordPress:
+
+```tsx
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const post = await getPostBySlug(slug);
+  if (!post) return { title: "Tidak Ditemukan | SMANAS" };
+
+  return {
+    title: `${post.title.rendered} | SMANAS`,
+    description: post.excerpt.rendered.replace(/<[^>]+>/g, "").slice(0, 160),
+    openGraph: {
+      images: post._embedded?.["wp:featuredmedia"]?.[0]?.source_url
+        ? [post._embedded["wp:featuredmedia"][0].source_url]
+        : [],
+    },
+  };
+}
 ```

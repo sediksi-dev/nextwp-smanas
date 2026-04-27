@@ -41,25 +41,38 @@ When asked to check, fix, or create components/pages:
 
 ## Token Reference (always use these, never raw hex/hsl values in JSX)
 
-### Brand tokens (use via inline style or Tailwind CSS variable utilities)
+### Brand tokens — exact values from `app/globals.css`
 
-| Token                        | Purpose                     |
-| ---------------------------- | --------------------------- |
-| `var(--site-bg)`             | Page background             |
-| `var(--site-surface)`        | Card / panel surface        |
-| `var(--site-text)`           | Primary text                |
-| `var(--site-muted)`          | Secondary / muted text      |
-| `var(--site-primary)`        | Primary brand color (blue)  |
-| `var(--site-primary-strong)` | Hover / pressed primary     |
-| `var(--site-accent)`         | Accent / highlight (yellow) |
-| `var(--site-border)`         | Borders and dividers        |
-| `var(--site-shadow)`         | Box shadow                  |
+| Token CSS Variable           | Tailwind Utility                        | Value                               | Purpose                               |
+| ---------------------------- | --------------------------------------- | ----------------------------------- | ------------------------------------- |
+| `var(--site-bg)`             | `bg-site-bg`                            | `#F4FBFF`                           | Page background                       |
+| `var(--site-surface)`        | `bg-site-surface`                       | `#FFFFFF`                           | Card / panel surface                  |
+| `var(--site-text)`           | `text-site-text`                        | `#003366`                           | Primary text and headings             |
+| `var(--site-muted)`          | `text-site-muted`                       | `#5F6D86`                           | Secondary / muted text                |
+| `var(--site-primary)`        | `bg-site-primary` / `text-site-primary` | `#29ABE2`                           | Primary brand color (blue)            |
+| `var(--site-primary-strong)` | `bg-site-primary-strong`                | `#003366`                           | Hover / pressed / dark panel          |
+| `var(--site-accent)`         | `bg-site-accent`                        | `#FFD700`                           | Accent CTA / important badge (yellow) |
+| `var(--site-border)`         | `border-site-border`                    | `#CFE5F4`                           | Borders and dividers                  |
+| `var(--site-shadow)`         | `shadow-site`                           | `0 14px 30px rgba(41,171,226,0.16)` | Surface box shadow                    |
 
-### Tailwind semantic utilities (preferred in JSX)
+### Tailwind semantic utilities (shadcn tokens — preferred in component JSX)
 
-`bg-background`, `bg-card`, `bg-primary`, `bg-secondary`, `bg-muted`, `bg-accent`
-`text-foreground`, `text-primary`, `text-muted-foreground`, `text-accent-foreground`
-`border-border`, `ring-ring`, `rounded-[--radius]`
+```
+bg-background     bg-card      bg-primary    bg-secondary   bg-muted   bg-accent
+text-foreground   text-primary text-muted-foreground        text-accent-foreground
+border-border     ring-ring    rounded-[--radius]
+```
+
+### Global CSS utility classes (defined in `app/globals.css`)
+
+```
+.container    .page-wrap    .surface      .section
+.eyebrow      .section-title  .section-copy
+.hero         .hero-grid    .hero-title   .hero-copy    .hero-actions   .hero-panel   .panel-kicker
+.btn          .btn-primary  .btn-secondary  .pill
+.card         .grid-3
+.site-nav     .site-nav-row .site-links   .brand        .menu-toggle
+```
 
 ## System Design Document Structure
 
