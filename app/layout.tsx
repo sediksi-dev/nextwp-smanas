@@ -7,6 +7,7 @@ import { GoogleAnalytics } from '@next/third-parties/google'
 import "./globals.css";
 import NextTopLoader from "nextjs-toploader";
 import { PageTransition } from "@/components/motion/page-transition";
+import { Analytics } from "@vercel/analytics/next"
 
 const headlineFont = Manrope({
   variable: "--font-manrope",
@@ -57,6 +58,7 @@ export default function RootLayout({
       className={`${headlineFont.variable} ${bodyFont.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-site-bg text-site-text">
+        <Analytics />
         <NextTopLoader color="#29abe2" showSpinner={false} height={3} shadow="none" />
         <SiteHeader />
         <PageTransition>{children}</PageTransition>
