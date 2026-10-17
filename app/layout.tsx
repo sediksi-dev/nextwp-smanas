@@ -8,6 +8,7 @@ import "./globals.css";
 import NextTopLoader from "nextjs-toploader";
 import { PageTransition } from "@/components/motion/page-transition";
 import { Analytics } from "@vercel/analytics/next"
+import Script from "next/script";
 
 const headlineFont = Manrope({
   variable: "--font-manrope",
@@ -65,6 +66,12 @@ export default function RootLayout({
         <SiteFooter />
       </body>
       <GoogleAnalytics gaId="G-TK7JJ0C02M" />
+      <Script
+        async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2462627619904603"
+        crossOrigin="anonymous"
+        strategy="afterInteractive"
+      />
     </html>
   );
 }
