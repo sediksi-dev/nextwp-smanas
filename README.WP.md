@@ -318,6 +318,53 @@ Semua Options Page datanya tersimpan di `wp_options` WordPress dan diambil melal
 
 ---
 
+### Revalidasi frontend untuk CCT & Options Pages
+
+Plugin **Next.js Revalidation** hanya mengirim webhook untuk perubahan post (semua post type), term, media, user, dan menu. Perubahan pada JetEngine CCT (`gallery`, `teachers`, `awards`) dan Options Pages di atas **tidak** mengirim webhook, sehingga frontend baru memperbaruinya setelah `WP_REVALIDATE_SECONDS` (default 24 jam) atau setelah tombol *Revalidate all* di pengaturan plugin ditekan.
+
+Agar perubahan langsung tampil, tambahkan hook berikut ke `smanas-config.php`. Hook ini memakai URL & secret dari pengaturan plugin Next.js Revalidation:
+
+```php
+function smanas_revalidate_frontend( $content_type ) {
+    $settings = get_option( 'next_revalidation_settings', array() );
+    if ( empty( $settings['next_url'] ) || empty( $settings['webhook_secret'] ) ) {
+        return;
+    }
+    wp_remote_post( trailingslashit( $settings['next_url'] ) . 'api/revalidate', array(
+        'timeout'  => 5,
+        'blocking' => false,
+        'headers'  => array(
+            'Content-Type'     => 'application/json',
+            'x-webhook-secret' => $settings['webhook_secret'],
+        ),
+        'body'     => wp_json_encode( array( 'contentType' => $content_type ) ),
+    ) );
+}
+
+// Options Pages — disimpan sebagai satu option bernama slug Options Page.
+foreach ( array( 'frontend', 'frontpage_config', 'slider_settings', 'profile_config', 'contact_config' ) as $slug ) {
+    $callback = function () use ( $slug ) {
+        smanas_revalidate_frontend( $slug );
+    };
+    add_action( "add_option_{$slug}", $callback );
+    add_action( "update_option_{$slug}", $callback );
+}
+
+// Custom Content Types.
+foreach ( array( 'gallery', 'teachers', 'awards' ) as $slug ) {
+    $callback = function () use ( $slug ) {
+        smanas_revalidate_frontend( $slug );
+    };
+    add_action( "jet-engine/custom-content-types/created-item/{$slug}", $callback );
+    add_action( "jet-engine/custom-content-types/updated-item/{$slug}", $callback );
+    add_action( "jet-engine/custom-content-types/delete-item/{$slug}", $callback );
+}
+```
+
+> **Verifikasi sebelum dipakai:** nama hook CCT di atas mengikuti JetEngine 3.x — cari string `custom-content-types/updated-item` di folder plugin JetEngine untuk memastikannya. Untuk Options Pages, pastikan mode penyimpanannya "default" (satu option per halaman); jika tiap field disimpan sebagai option terpisah, hook `update_option_{slug}` tidak akan terpanggil.
+
+---
+
 ## 9. Advanced Access Manager — Roles & Capabilities
 
 Konfigurasi role dikelola oleh plugin **Advanced Access Manager** dan dapat di-export/import melalui file `aam-settings.json`.

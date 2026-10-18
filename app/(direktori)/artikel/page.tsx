@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { PageWrap } from "@/components/layout/page-wrap";
 import PageHeading from "@/components/elements/page-heading";
 import { getCategories, getCategoryBySlug, getAllPostsPaginated, getPostsByCategoryPaginated, getMediaById } from "@/lib/wordpress";
+import { parsePageParam } from "@/lib/utils";
 import { ArtikelSearch } from "./_components/artikel-search";
 import { ViewToggle } from "./_components/view-toggle";
 import { PostGridCard } from "./_components/post-grid-card";
@@ -52,7 +53,7 @@ export default async function ArtikelPage({
     searchParams: Promise<SearchParams>;
 }) {
     const { kategori = "", q = "", page = "1", view = "grid" } = await searchParams;
-    const currentPage = Math.max(1, Number(page) || 1);
+    const currentPage = parsePageParam(page);
     const viewMode = view === "list" ? "list" : "grid";
 
     // Fetch categories for tabs

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getGalleryItemsPaginated } from "@/lib/wordpress";
+import { parsePageParam } from "@/lib/utils";
 import { PageWrap } from "@/components/layout/page-wrap";
 import { Section } from "@/components/layout/section";
 import PageHeading from "@/components/elements/page-heading";
@@ -21,7 +22,7 @@ export default async function GaleriPage({
     searchParams: Promise<{ page?: string }>;
 }) {
     const { page: pageStr } = await searchParams;
-    const page = Math.max(1, Number(pageStr ?? 1));
+    const page = parsePageParam(pageStr);
     const { items, totalPages } = await getGalleryItemsPaginated(page, 12);
 
     return (

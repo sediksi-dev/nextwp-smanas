@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
 import { getPpdbBySlug } from "@/lib/wordpress";
+import { isWpSlug } from "@/lib/utils";
 import { PageWrap } from "@/components/layout/page-wrap";
 import { Section } from "@/components/layout/section";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
-    const item = await getPpdbBySlug(slug);
+    const item = isWpSlug(slug) ? await getPpdbBySlug(slug) : null;
     if (!item) return { title: "Hasil Seleksi | SMA Nasional Malang" };
     return {
         title: `Hasil Seleksi PPDB ${item.meta.year_open} | SMA Nasional Malang`,
@@ -27,7 +28,7 @@ type Row = (string | number | boolean | null | undefined)[];
 
 export default async function PpdbHasilPage({ params }: Props) {
     const { slug } = await params;
-    const item = await getPpdbBySlug(slug);
+    const item = isWpSlug(slug) ? await getPpdbBySlug(slug) : null;
     if (!item) notFound();
 
     const { admission_results, year_open } = item.meta;

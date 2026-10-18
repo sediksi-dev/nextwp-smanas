@@ -6,6 +6,7 @@ import { PageWrap } from "@/components/layout/page-wrap";
 import PageHeading from "@/components/elements/page-heading";
 import { Button } from "@/components/ui/button";
 import { getCategoryBySlug, getPostsByCategoryPaginated, getMediaById } from "@/lib/wordpress";
+import { isWpSlug, parsePageParam } from "@/lib/utils";
 import { CategorySearch } from "./_components/category-search";
 import { PostGridCard } from "@/app/(direktori)/artikel/_components/post-grid-card";
 
@@ -22,7 +23,7 @@ type Props = {
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
     const { slug } = await params;
     const { q } = await searchParams;
-    const category = await getCategoryBySlug(slug);
+    const category = isWpSlug(slug) ? await getCategoryBySlug(slug) : null;
     if (!category) return { title: "Kategori tidak ditemukan" };
     const title = q
         ? `${category.name} — "${q}" | SMA Nasional Malang`
@@ -45,10 +46,10 @@ export default async function CategorySlugPage({ params, searchParams }: Props) 
     const { slug } = await params;
     const { q = "", page = "1" } = await searchParams;
 
-    const category = await getCategoryBySlug(slug);
+    const category = isWpSlug(slug) ? await getCategoryBySlug(slug) : null;
     if (!category) notFound();
 
-    const currentPage = Math.max(1, Number(page) || 1);
+    const currentPage = parsePageParam(page);
     const { posts, total, totalPages } = await getPostsByCategoryPaginated(
         category.id,
         slug,
