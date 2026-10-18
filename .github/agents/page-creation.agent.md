@@ -29,8 +29,7 @@ Before any mode runs, load these files:
 1. `.github/system-design.md` -- visual design rules (all 12 sections)
 2. `.github/instructions/general.instructions.md` -- coding conventions
 3. `lib/wordpress.ts` -- available server-side data functions
-4. `lib/api.ts` -- client-safe data functions
-5. An existing similar page as reference (see mode-specific guidance)
+4. An existing similar page as reference (see mode-specific guidance)
 
 ---
 
@@ -194,8 +193,8 @@ MODE: AUDIT
 
 ARCHITECTURE:
   [ ] page.tsx is a Server Component (no "use client" unless justified)
-  [ ] Data fetched from lib/wordpress.ts (not lib/api.ts in server component)
-  [ ] Client components import data via lib/api.ts (not wordpress.ts)
+  [ ] Data fetched from lib/wordpress.ts in a Server Component
+  [ ] Client components receive data as props (no fetching, no /api/* routes)
   [ ] No useEffect for data fetching
 
 CONVENTIONS:
@@ -229,7 +228,7 @@ PERFORMANCE:
 `
 FILE: app/(direktori)/artikel/page.tsx
 VIOLATIONS:
-  [1] Line 3 -- imports from lib/wordpress.ts in a client component. Remove "use client" or switch to lib/api.ts.
+  [1] Line 3 -- imports from lib/wordpress.ts in a client component. Remove "use client" or move the fetch to a Server Component parent and pass the data as props.
   [2] Line 47 -- hardcoded color class "text-[#5F6D86]". Use "text-site-muted" instead.
   [3] Line 82 -- arbitrary spacing "p-[22px]". Use "p-6" (24px) instead.
   [4] Missing -- loading.tsx does not exist. Required for every page.

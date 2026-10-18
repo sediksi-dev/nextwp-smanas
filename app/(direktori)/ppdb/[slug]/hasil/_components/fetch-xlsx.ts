@@ -6,7 +6,10 @@ type Row = (string | number | boolean | null | undefined)[];
 export async function fetchXlsx(url: string): Promise<Row[] | null> {
     try {
         const res = await fetch(url, {
-            next: { revalidate: WP_REVALIDATE_SECONDS, tags: [CACHE_TAGS.all, CACHE_TAGS.ppdb] },
+            next: {
+                revalidate: WP_REVALIDATE_SECONDS,
+                tags: [CACHE_TAGS.all, CACHE_TAGS.ppdb, CACHE_TAGS.mediaFiles],
+            },
         });
         if (!res.ok) return null;
         const buffer = await res.arrayBuffer();

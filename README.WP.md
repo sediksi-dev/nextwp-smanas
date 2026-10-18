@@ -318,11 +318,14 @@ Semua Options Page datanya tersimpan di `wp_options` WordPress dan diambil melal
 
 ---
 
-### Revalidasi frontend untuk CCT & Options Pages
+### Revalidasi frontend (hook tambahan di `smanas-config.php`)
 
-Plugin **Next.js Revalidation** hanya mengirim webhook untuk perubahan post (semua post type), term, media, user, dan menu. Perubahan pada JetEngine CCT (`gallery`, `teachers`, `awards`) dan Options Pages di atas **tidak** mengirim webhook, sehingga frontend baru memperbaruinya setelah `WP_REVALIDATE_SECONDS` (default 24 jam) atau setelah tombol *Revalidate all* di pengaturan plugin ditekan.
+Plugin **Next.js Revalidation** punya dua celah yang memengaruhi cache frontend (dan kuota ISR Writes Vercel):
 
-Agar perubahan langsung tampil, tambahkan hook berikut ke `smanas-config.php`. Hook ini memakai URL & secret dari pengaturan plugin Next.js Revalidation:
+1. **Webhook untuk draft.** Plugin mengirim webhook pada *setiap* `save_post` — termasuk simpan draft dan autosave draft Gutenberg (±1×/menit selama menulis) — padahal draft tidak pernah tampil di frontend. Setiap webhook itu membuat halaman beranda & semua halaman artikel dirender ulang saat dikunjungi.
+2. **Tidak ada webhook untuk JetEngine CCT (`gallery`, `teachers`, `awards`) dan Options Pages.** Perubahannya baru tampil setelah `WP_REVALIDATE_SECONDS` (default 24 jam) atau setelah tombol *Revalidate all* di pengaturan plugin ditekan.
+
+Tambahkan kode berikut ke `smanas-config.php`. Kode ini memakai URL & secret dari pengaturan plugin Next.js Revalidation, dan handler plugin lainnya (trash, hapus, term, media, tombol *Revalidate all*) tetap dipakai:
 
 ```php
 function smanas_revalidate_frontend( $content_type ) {
@@ -341,7 +344,37 @@ function smanas_revalidate_frontend( $content_type ) {
     ) );
 }
 
-// Options Pages — disimpan sebagai satu option bernama slug Options Page.
+// 1. Lepas handler save_post & transition_post_status milik plugin (terpanggil juga untuk draft)…
+add_action( 'init', function () {
+    global $wp_filter;
+    foreach ( array( 'save_post', 'transition_post_status' ) as $hook ) {
+        if ( empty( $wp_filter[ $hook ] ) ) {
+            continue;
+        }
+        foreach ( $wp_filter[ $hook ]->callbacks as $priority => $callbacks ) {
+            foreach ( $callbacks as $callback ) {
+                if ( is_array( $callback['function'] ) && $callback['function'][0] instanceof Next_Revalidation ) {
+                    remove_action( $hook, $callback['function'], $priority );
+                }
+            }
+        }
+    }
+}, 20 );
+
+// …dan ganti dengan hook yang hanya bereaksi saat konten publik berubah: terbit, edit konten
+// yang sudah terbit, batal terbit. wp_after_insert_post berjalan setelah meta & term tersimpan.
+add_action( 'wp_after_insert_post', function ( $post_id, $post, $update, $post_before ) {
+    if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) ) {
+        return;
+    }
+    $was_public = $post_before && 'publish' === $post_before->post_status;
+    if ( 'publish' !== $post->post_status && ! $was_public ) {
+        return;
+    }
+    smanas_revalidate_frontend( $post->post_type );
+}, 10, 4 );
+
+// 2. Options Pages — disimpan sebagai satu option bernama slug Options Page.
 foreach ( array( 'frontend', 'frontpage_config', 'slider_settings', 'profile_config', 'contact_config' ) as $slug ) {
     $callback = function () use ( $slug ) {
         smanas_revalidate_frontend( $slug );
@@ -350,7 +383,7 @@ foreach ( array( 'frontend', 'frontpage_config', 'slider_settings', 'profile_con
     add_action( "update_option_{$slug}", $callback );
 }
 
-// Custom Content Types.
+// 2. Custom Content Types.
 foreach ( array( 'gallery', 'teachers', 'awards' ) as $slug ) {
     $callback = function () use ( $slug ) {
         smanas_revalidate_frontend( $slug );
@@ -361,7 +394,10 @@ foreach ( array( 'gallery', 'teachers', 'awards' ) as $slug ) {
 }
 ```
 
-> **Verifikasi sebelum dipakai:** nama hook CCT di atas mengikuti JetEngine 3.x — cari string `custom-content-types/updated-item` di folder plugin JetEngine untuk memastikannya. Untuk Options Pages, pastikan mode penyimpanannya "default" (satu option per halaman); jika tiap field disimpan sebagai option terpisah, hook `update_option_{slug}` tidak akan terpanggil.
+> **Verifikasi sebelum dipakai:**
+> - Bagian 1 mengikuti source plugin Next.js Revalidation 1.0.5 (class `Next_Revalidation`). Setelah dipasang, simpan sebuah draft dan pastikan tidak ada entri baru di halaman *Revalidation History* plugin; lalu update artikel yang sudah terbit dan pastikan entri muncul.
+> - Nama hook CCT di bagian 2 mengikuti JetEngine 3.x — cari string `custom-content-types/updated-item` di folder plugin JetEngine untuk memastikannya.
+> - Untuk Options Pages, pastikan mode penyimpanannya "default" (satu option per halaman); jika tiap field disimpan sebagai option terpisah, hook `update_option_{slug}` tidak akan terpanggil.
 
 ---
 

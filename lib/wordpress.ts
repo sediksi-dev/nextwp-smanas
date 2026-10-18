@@ -34,6 +34,8 @@ export const CACHE_TAGS = {
     categories: "wp-categories",
     tags: "wp-tags",
     media: "wp-media",
+    /** Raw files fetched by URL (PPDB results xlsx), whose attachment id isn't known. */
+    mediaFiles: "wp-media-files",
     ppdb: "wp-ppdb",
     gallery: "wp-gallery",
     teachers: "wp-teachers",
@@ -43,7 +45,14 @@ export const CACHE_TAGS = {
     contact: "wp-contact",
 } as const;
 
-export type CacheTag = (typeof CACHE_TAGS)[keyof typeof CACHE_TAGS];
+export type CacheTag =
+    | (typeof CACHE_TAGS)[keyof typeof CACHE_TAGS]
+    | `${typeof CACHE_TAGS.media}-${number}`;
+
+/** Per-attachment tag, so a media webhook only invalidates fetches of that attachment. */
+export function mediaTag(id: number): CacheTag {
+    return `${CACHE_TAGS.media}-${id}`;
+}
 
 type WpFetchOptions = {
     namespace?: string;
@@ -54,6 +63,11 @@ type WpFetchOptions = {
      */
     noStore?: boolean;
 };
+
+/** WordPress answered, but the resource doesn't exist or isn't visible to us. */
+function isMissing(status: number): boolean {
+    return status >= 400 && status < 500 && status !== 408 && status !== 429;
+}
 
 async function wpRequest(
     path: string,
@@ -76,33 +90,29 @@ async function wpRequest(
                 next: { revalidate: WP_REVALIDATE_SECONDS, tags: [CACHE_TAGS.all, ...tags] },
             },
     );
-    return res.ok ? res : null;
+    if (res.ok) return res;
+    if (isMissing(res.status)) return null;
+    // Outages (5xx, 408, 429) and network errors throw instead of returning empty data:
+    // a failed render makes ISR keep serving the last good page, whereas a render with
+    // empty data would be cached as-is for WP_REVALIDATE_SECONDS.
+    throw new Error(`WordPress responded ${res.status} for ${namespace}/${path}`);
 }
 
 async function wpFetch<T>(path: string, options: WpFetchOptions): Promise<T | null> {
-    try {
-        const res = await wpRequest(path, options);
-        if (!res) return null;
-        return (await res.json()) as T;
-    } catch {
-        return null;
-    }
+    const res = await wpRequest(path, options);
+    return res ? ((await res.json()) as T) : null;
 }
 
 async function wpFetchWithMeta<T>(
     path: string,
     options: WpFetchOptions,
 ): Promise<{ data: T | null; total: number; totalPages: number }> {
-    try {
-        const res = await wpRequest(path, options);
-        if (!res) return { data: null, total: 0, totalPages: 0 };
-        const total = Number(res.headers.get("X-WP-Total") ?? 0);
-        const totalPages = Number(res.headers.get("X-WP-TotalPages") ?? 0);
-        const data = (await res.json()) as T;
-        return { data, total, totalPages };
-    } catch {
-        return { data: null, total: 0, totalPages: 0 };
-    }
+    const res = await wpRequest(path, options);
+    if (!res) return { data: null, total: 0, totalPages: 0 };
+    const total = Number(res.headers.get("X-WP-Total") ?? 0);
+    const totalPages = Number(res.headers.get("X-WP-TotalPages") ?? 0);
+    const data = (await res.json()) as T;
+    return { data, total, totalPages };
 }
 
 // ── Posts ────────────────────────────────────────────────────────────────────────────
@@ -375,7 +385,7 @@ export async function getPageBySlug(slug: string): Promise<WpPost | null> {
 // ── Attachments ────────────────────────────────────────────────────────────────────────────────
 
 export async function getMediaById(id: number) {
-    const data = await wpFetch<WpMediaItem>(`media/${id}`, { tags: [CACHE_TAGS.media] });
+    const data = await wpFetch<WpMediaItem>(`media/${id}`, { tags: [CACHE_TAGS.media, mediaTag(id)] });
     if (data === null) {
         return null;
     }

@@ -253,12 +253,13 @@ Semua fetch ke WordPress diberi tag `wordpress` ditambah tag per jenis data:
 | `contentType` webhook                                   | Cache tag          |
 | ------------------------------------------------------- | ------------------ |
 | `all` (tombol *Revalidate all* di plugin)               | `wordpress` (semua) |
-| `post`                                                  | `wp-posts`         |
+| `post`                                                  | `wp-posts`, `wp-categories` (jumlah artikel per kategori) |
 | `page`                                                  | `wp-pages`         |
 | `ppdb`                                                  | `wp-ppdb`          |
-| `media`, `attachment`                                   | `wp-media`         |
-| `category`                                              | `wp-categories`    |
-| `tag`                                                   | `wp-tags`          |
+| `wp_block` (synced pattern)                             | `wp-posts`, `wp-pages`, `wp-ppdb` |
+| `media`, `attachment`                                   | `wp-media-{id}` + `wp-media-files` (file mentah, mis. xlsx hasil PPDB) |
+| `category`                                              | `wp-categories`, `wp-posts`, `wp-site-config` |
+| `tag`                                                   | `wp-tags`, `wp-posts` |
 | `gallery` *                                             | `wp-gallery`       |
 | `teachers` *                                            | `wp-teachers`      |
 | `awards` *                                              | `wp-achievements`  |
@@ -266,7 +267,9 @@ Semua fetch ke WordPress diberi tag `wordpress` ditambah tag per jenis data:
 | `profile_config` *                                      | `wp-profiles`      |
 | `contact_config` *                                      | `wp-contact`       |
 
-\* JetEngine CCT & Options Pages **tidak** memicu plugin Next.js Revalidation. Tanpa hook tambahan (lihat [README.WP.md](README.WP.md#revalidasi-frontend-untuk-cct--options-pages)), perubahannya baru tampil setelah `WP_REVALIDATE_SECONDS` atau setelah klik *Revalidate all* di pengaturan plugin.
+\* JetEngine CCT & Options Pages **tidak** memicu plugin Next.js Revalidation. Tanpa hook tambahan (lihat [README.WP.md](README.WP.md#revalidasi-frontend-hook-tambahan-di-smanas-configphp)), perubahannya baru tampil setelah `WP_REVALIDATE_SECONDS` atau setelah klik *Revalidate all* di pengaturan plugin. Hook yang sama juga mencegah simpan draft/autosave memicu revalidasi.
+
+Jika WordPress error (5xx/timeout) saat halaman dirender ulang, render dibatalkan sehingga ISR tetap menyajikan versi terakhir yang benar — bukan menyimpan halaman kosong selama 24 jam. Konsekuensinya, `next build` gagal bila WordPress sedang down saat deploy.
 
 ---
 

@@ -12,7 +12,10 @@ export function cn(...inputs: ClassValue[]) {
  * WordPress, so callers 404 without querying it and caching the empty result.
  */
 export function isWpSlug(value: string): boolean {
-    return /^[\p{L}\p{N}_%-]{1,200}$/u.test(value);
+    // Page components receive params percent-encoded but generateMetadata receives them
+    // decoded; compare the encoded form so both accept the same slugs.
+    const encoded = /%[0-9a-f]{2}/i.test(value) ? value : encodeURIComponent(value);
+    return /^[A-Za-z0-9_%-]{1,200}$/.test(encoded);
 }
 
 /** Parses a `?page=` search param into a positive integer, defaulting to 1. */
