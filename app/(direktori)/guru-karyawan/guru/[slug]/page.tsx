@@ -23,7 +23,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug: id } = await params;
-    const teacher = await getTeacherById(id);
+    const teacher = /^\d+$/.test(id) ? await getTeacherById(id) : null;
     if (!teacher) return { title: "Guru tidak ditemukan | SMA Nasional Malang" };
     return {
         title: `${teacher.name} | Guru & Karyawan | SMA Nasional Malang`,
@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function GuruProfilPage({ params }: Props) {
     const { slug: id } = await params;
-    const teacher = await getTeacherById(id);
+    const teacher = /^\d+$/.test(id) ? await getTeacherById(id) : null;
 
     if (!teacher || teacher.category === "staf") notFound();
 

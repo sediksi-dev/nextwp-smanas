@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
 import { getPpdbBySlug, getPostOrPageById } from "@/lib/wordpress";
+import { isWpSlug } from "@/lib/utils";
 import type { PpdbRelatedLink } from "@/types/wordpress";
 import { PageWrap } from "@/components/layout/page-wrap";
 import { Section } from "@/components/layout/section";
@@ -14,7 +15,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
-    const item = await getPpdbBySlug(slug);
+    const item = isWpSlug(slug) ? await getPpdbBySlug(slug) : null;
     if (!item) return { title: "PPDB Tidak Ditemukan | SMA Nasional Malang" };
     const title = item.title.rendered;
     return {
@@ -34,7 +35,7 @@ function normaliseRelatedLinks(raw: PpdbRelatedLink[] | Record<string, PpdbRelat
 
 export default async function PpdbDetailPage({ params }: Props) {
     const { slug } = await params;
-    const item = await getPpdbBySlug(slug);
+    const item = isWpSlug(slug) ? await getPpdbBySlug(slug) : null;
     if (!item) notFound();
 
     const title = item.title.rendered;

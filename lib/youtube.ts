@@ -10,7 +10,6 @@ export interface YoutubeVideo {
 }
 
 const CHANNEL_ID = "UCNGkr7r-39mCt897G7HB2nA";
-const RSS_URL = `https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`;
 
 function between(src: string, open: string, close: string): string {
     const start = src.indexOf(open);
@@ -31,7 +30,7 @@ function decodeXmlEntities(str: string): string {
 
 /**
  * Fetches the latest videos from the school YouTube channel via public RSS feed.
- * Results are cached and revalidated every hour via Next.js fetch cache.
+ * Results are cached and revalidated every 6 hours via Next.js fetch cache.
  * @param limit   Number of videos to return (default 6)
  * @param channelId  Override the default channel ID (configured in app/page.tsx)
  */
@@ -40,7 +39,8 @@ export async function getYoutubeVideos(limit = 6, channelId?: string): Promise<Y
     const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${id}`;
     try {
         const res = await fetch(rssUrl, {
-            next: { revalidate: 3600 },
+            // The homepage re-renders (an ISR write) whenever this expires.
+            next: { revalidate: 21600 },
         });
         if (!res.ok) return [];
 

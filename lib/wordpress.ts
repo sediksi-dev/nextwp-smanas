@@ -16,68 +16,109 @@ import type {
 } from "@/types/wordpress";
 
 const baseUrl = process.env.WP_URL;
-const REVALIDATE = Number(process.env.WP_REVALIDATE_SECONDS ?? 1800);
+/**
+ * Time-based fallback only. Content changes reach the cache through the
+ * /api/revalidate webhook (by tag), so this just bounds staleness for content the
+ * webhook can't see (JetEngine CCT & Options Pages). Every expiry re-renders and
+ * re-writes each visited page — on Vercel that is billed as ISR writes — so keep it long.
+ */
+export const WP_REVALIDATE_SECONDS = Number(process.env.WP_REVALIDATE_SECONDS ?? 86400);
 const WP_USERNAME = process.env.WP_APP_USERNAME;
 const WP_PASSWORD = process.env.WP_APP_PASSWORD;
 
-async function wpFetch<T>(path: string, namespace: string = "wp/v2"): Promise<T | null> {
+/** Cache tags attached to WordPress fetches; /api/revalidate invalidates them by content type. */
+export const CACHE_TAGS = {
+    all: "wordpress",
+    posts: "wp-posts",
+    pages: "wp-pages",
+    categories: "wp-categories",
+    tags: "wp-tags",
+    media: "wp-media",
+    /** Raw files fetched by URL (PPDB results xlsx), whose attachment id isn't known. */
+    mediaFiles: "wp-media-files",
+    ppdb: "wp-ppdb",
+    gallery: "wp-gallery",
+    teachers: "wp-teachers",
+    achievements: "wp-achievements",
+    siteConfig: "wp-site-config",
+    profiles: "wp-profiles",
+    contact: "wp-contact",
+} as const;
+
+export type CacheTag =
+    | (typeof CACHE_TAGS)[keyof typeof CACHE_TAGS]
+    | `${typeof CACHE_TAGS.media}-${number}`;
+
+/** Per-attachment tag, so a media webhook only invalidates fetches of that attachment. */
+export function mediaTag(id: number): CacheTag {
+    return `${CACHE_TAGS.media}-${id}`;
+}
+
+type WpFetchOptions = {
+    namespace?: string;
+    tags: CacheTag[];
+    /**
+     * Bypass the Data Cache. Use for visitor-supplied queries (search): every distinct
+     * query would otherwise become its own cache entry, i.e. its own cache write.
+     */
+    noStore?: boolean;
+};
+
+/** WordPress answered, but the resource doesn't exist or isn't visible to us. */
+function isMissing(status: number): boolean {
+    return status >= 400 && status < 500 && status !== 408 && status !== 429;
+}
+
+async function wpRequest(
+    path: string,
+    { namespace = "wp/v2", tags, noStore = false }: WpFetchOptions,
+): Promise<Response | null> {
     if (!baseUrl) return null;
 
-    try {
-        const headers: HeadersInit = {};
-        if (WP_USERNAME && WP_PASSWORD) {
-            const auth = Buffer.from(`${WP_USERNAME}:${WP_PASSWORD}`).toString("base64");
-            headers["Authorization"] = `Basic ${auth}`;
-        }
-
-        const res = await fetch(
-            `${baseUrl.replace(/\/$/, "")}/wp-json/${namespace}/${path}`,
-            {
-                headers,
-                next: { revalidate: REVALIDATE },
-            },
-        );
-        if (!res.ok) return null;
-        return (await res.json()) as T;
-    } catch {
-        return null;
+    const headers: HeadersInit = {};
+    if (WP_USERNAME && WP_PASSWORD) {
+        const auth = Buffer.from(`${WP_USERNAME}:${WP_PASSWORD}`).toString("base64");
+        headers["Authorization"] = `Basic ${auth}`;
     }
+
+    const res = await fetch(
+        `${baseUrl.replace(/\/$/, "")}/wp-json/${namespace}/${path}`,
+        noStore
+            ? { headers, cache: "no-store" }
+            : {
+                headers,
+                next: { revalidate: WP_REVALIDATE_SECONDS, tags: [CACHE_TAGS.all, ...tags] },
+            },
+    );
+    if (res.ok) return res;
+    if (isMissing(res.status)) return null;
+    // Outages (5xx, 408, 429) and network errors throw instead of returning empty data:
+    // a failed render makes ISR keep serving the last good page, whereas a render with
+    // empty data would be cached as-is for WP_REVALIDATE_SECONDS.
+    throw new Error(`WordPress responded ${res.status} for ${namespace}/${path}`);
+}
+
+async function wpFetch<T>(path: string, options: WpFetchOptions): Promise<T | null> {
+    const res = await wpRequest(path, options);
+    return res ? ((await res.json()) as T) : null;
 }
 
 async function wpFetchWithMeta<T>(
     path: string,
-    namespace: string = "wp/v2",
+    options: WpFetchOptions,
 ): Promise<{ data: T | null; total: number; totalPages: number }> {
-    if (!baseUrl) return { data: null, total: 0, totalPages: 0 };
-
-    try {
-        const headers: HeadersInit = {};
-        if (WP_USERNAME && WP_PASSWORD) {
-            const auth = Buffer.from(`${WP_USERNAME}:${WP_PASSWORD}`).toString("base64");
-            headers["Authorization"] = `Basic ${auth}`;
-        }
-
-        const res = await fetch(
-            `${baseUrl.replace(/\/$/, "")}/wp-json/${namespace}/${path}`,
-            {
-                headers,
-                next: { revalidate: REVALIDATE },
-            },
-        );
-        if (!res.ok) return { data: null, total: 0, totalPages: 0 };
-        const total = Number(res.headers.get("X-WP-Total") ?? 0);
-        const totalPages = Number(res.headers.get("X-WP-TotalPages") ?? 0);
-        const data = (await res.json()) as T;
-        return { data, total, totalPages };
-    } catch {
-        return { data: null, total: 0, totalPages: 0 };
-    }
+    const res = await wpRequest(path, options);
+    if (!res) return { data: null, total: 0, totalPages: 0 };
+    const total = Number(res.headers.get("X-WP-Total") ?? 0);
+    const totalPages = Number(res.headers.get("X-WP-TotalPages") ?? 0);
+    const data = (await res.json()) as T;
+    return { data, total, totalPages };
 }
 
 // ── Posts ────────────────────────────────────────────────────────────────────────────
 
 export async function getLatestPosts(limit = 6) {
-    const data = await wpFetch<WpPost[]>(`posts?per_page=${limit}`);
+    const data = await wpFetch<WpPost[]>(`posts?per_page=${limit}`, { tags: [CACHE_TAGS.posts] });
     return data ?? [];
 }
 
@@ -85,6 +126,7 @@ export async function getPostsByCategory(category: string, limit = 12) {
     const encoded = encodeURIComponent(category);
     const data = await wpFetch<WpPost[]>(
         `posts?categories=${encoded}&per_page=${limit}`,
+        { tags: [CACHE_TAGS.posts] },
     );
     return data ?? [];
 }
@@ -92,6 +134,7 @@ export async function getPostsByCategory(category: string, limit = 12) {
 export async function getAllPosts(page = 1, perPage = 12) {
     const data = await wpFetch<WpPost[]>(
         `posts?per_page=${perPage}&page=${page}`,
+        { tags: [CACHE_TAGS.posts] },
     );
     return data ?? [];
 }
@@ -109,6 +152,7 @@ export async function getAllPostsPaginated(
 
     const { data, total, totalPages } = await wpFetchWithMeta<WpPost[]>(
         `posts?${params.toString()}`,
+        { tags: [CACHE_TAGS.posts], noStore: Boolean(search) },
     );
 
     if (data === null) {
@@ -121,6 +165,7 @@ export async function getAllPostsPaginated(
 export async function getPostBySlug(slug: string) {
     const data = await wpFetch<WpPost[]>(
         `posts?slug=${encodeURIComponent(slug)}&per_page=1`,
+        { tags: [CACHE_TAGS.posts] },
     );
     if (data === null || data.length === 0) return null;
     return data[0];
@@ -129,13 +174,14 @@ export async function getPostBySlug(slug: string) {
 // ── Categories ─────────────────────────────────────────────────────────────────────────
 
 export async function getCategories(): Promise<WpCategory[]> {
-    const data = await wpFetch<WpCategory[]>("categories?per_page=100&hide_empty=true");
+    const data = await wpFetch<WpCategory[]>("categories?per_page=100&hide_empty=true", { tags: [CACHE_TAGS.categories] });
     return data ?? [];
 }
 
 export async function getCategoryBySlug(slug: string): Promise<WpCategory | null> {
     const data = await wpFetch<WpCategory[]>(
         `categories?slug=${encodeURIComponent(slug)}&per_page=1`,
+        { tags: [CACHE_TAGS.categories] },
     );
     if (data === null || data.length === 0) return null;
     return data[0];
@@ -157,6 +203,7 @@ export async function getPostsByCategoryPaginated(
 
     const { data, total, totalPages } = await wpFetchWithMeta<WpPost[]>(
         `posts?${params.toString()}`,
+        { tags: [CACHE_TAGS.posts], noStore: Boolean(search) },
     );
 
     if (data === null) {
@@ -169,7 +216,7 @@ export async function getPostsByCategoryPaginated(
 // ── Achievements ───────────────────────────────────────────────────────────────────────────
 
 export async function getAchievementsWithImage() {
-    const data = await wpFetch<Achievement[]>("prestasi-with-image", "smanas/v1");
+    const data = await wpFetch<Achievement[]>("prestasi-with-image", { namespace: "smanas/v1", tags: [CACHE_TAGS.achievements] });
     if (data === null || data.length === 0) return [];
 
     data.sort((a, b) => {
@@ -192,7 +239,7 @@ export async function getAllAchievements(year?: number, scope?: AchievementScope
     const query = params.toString();
     const endpoint = query ? `awards?${query}` : "awards";
 
-    const data = await wpFetch<Array<Achievement>>(endpoint, "jet-cct");
+    const data = await wpFetch<Array<Achievement>>(endpoint, { namespace: "jet-cct", tags: [CACHE_TAGS.achievements] });
     return data ?? [];
 }
 
@@ -221,7 +268,7 @@ export function parseGalleryPhotos(raw: string): string[] {
 }
 
 export async function getGalleryItemsPreview(limit = 6): Promise<WpGalleryItem[]> {
-    const data = await wpFetch<WpGalleryItem[]>(`gallery?_limit=${limit}`, "jet-cct");
+    const data = await wpFetch<WpGalleryItem[]>(`gallery?_limit=${limit}`, { namespace: "jet-cct", tags: [CACHE_TAGS.gallery] });
     return data ?? [];
 }
 
@@ -237,7 +284,7 @@ export async function getGalleryItemsPaginated(
     });
     const { data, total, totalPages } = await wpFetchWithMeta<WpGalleryItem[]>(
         `gallery?${params.toString()}`,
-        "jet-cct",
+        { namespace: "jet-cct", tags: [CACHE_TAGS.gallery] },
     );
     if (data === null) {
         return { items: [], total: 0, totalPages: 0 };
@@ -257,7 +304,7 @@ export async function getGalleryItemsPaginated(
 }
 
 export async function getGalleryItemById(id: string | number): Promise<WpGalleryItem | null> {
-    const data = await wpFetch<WpGalleryItem>(`gallery/${id}`, "jet-cct");
+    const data = await wpFetch<WpGalleryItem>(`gallery/${encodeURIComponent(id)}`, { namespace: "jet-cct", tags: [CACHE_TAGS.gallery] });
     return data;
 }
 
@@ -266,41 +313,41 @@ export async function getGalleryItemById(id: string | number): Promise<WpGallery
 export async function getTeachers(category?: TeacherCategory, limit = 100): Promise<WpTeacher[]> {
     const params = new URLSearchParams({ _limit: String(limit) });
     if (category) params.set("category", category);
-    const data = await wpFetch<WpTeacher[]>(`teachers?${params.toString()}`, "jet-cct");
+    const data = await wpFetch<WpTeacher[]>(`teachers?${params.toString()}`, { namespace: "jet-cct", tags: [CACHE_TAGS.teachers] });
     return data ?? [];
 }
 
 export async function getTeacherById(id: string | number): Promise<WpTeacher | null> {
-    const data = await wpFetch<WpTeacher>(`teachers/${id}`, "jet-cct");
+    const data = await wpFetch<WpTeacher>(`teachers/${encodeURIComponent(id)}`, { namespace: "jet-cct", tags: [CACHE_TAGS.teachers] });
     return data;
 }
 
 // ── Site Config ───────────────────────────────────────────────────────────────────────────
 
 export async function getSiteConfig(): Promise<SmanasSiteConfig | null> {
-    return wpFetch<SmanasSiteConfig>("configs", "smanas/v1");
+    return wpFetch<SmanasSiteConfig>("configs", { namespace: "smanas/v1", tags: [CACHE_TAGS.siteConfig] });
 }
 
 // ── Profiles Config ───────────────────────────────────────────────────────────────────────────
 
 export async function getProfilesConfig() {
-    return wpFetch<SmanasProfilesConfig>("profiles", "smanas/v1");
+    return wpFetch<SmanasProfilesConfig>("profiles", { namespace: "smanas/v1", tags: [CACHE_TAGS.profiles] });
 }
 
 // ── PPDB (custom post type) ──────────────────────────────────────────────────────────────────────
 
 export async function getPpdbById(id: number): Promise<WpPpdbItem | null> {
-    const data = await wpFetch<WpPpdbItem>(`ppdb/${id}`);
+    const data = await wpFetch<WpPpdbItem>(`ppdb/${id}`, { tags: [CACHE_TAGS.ppdb] });
     return data;
 }
 
 export async function getPpdbList(limit = 10): Promise<WpPpdbItem[]> {
-    const data = await wpFetch<WpPpdbItem[]>(`ppdb?per_page=${limit}&orderby=date&order=desc`);
+    const data = await wpFetch<WpPpdbItem[]>(`ppdb?per_page=${limit}&orderby=date&order=desc`, { tags: [CACHE_TAGS.ppdb] });
     return data ?? [];
 }
 
 export async function getPpdbBySlug(slug: string): Promise<WpPpdbItem | null> {
-    const data = await wpFetch<WpPpdbItem[]>(`ppdb?slug=${encodeURIComponent(slug)}&per_page=1`);
+    const data = await wpFetch<WpPpdbItem[]>(`ppdb?slug=${encodeURIComponent(slug)}&per_page=1`, { tags: [CACHE_TAGS.ppdb] });
     if (data === null || data.length === 0) return null;
     return data[0];
 }
@@ -311,9 +358,9 @@ export async function getPpdbBySlug(slug: string): Promise<WpPpdbItem | null> {
  * Used to resolve `meta.related_content` IDs.
  */
 export async function getPostOrPageById(id: number): Promise<{ slug: string; title: string; type: "post" | "page" } | null> {
-    const post = await wpFetch<WpPost>(`posts/${id}`);
+    const post = await wpFetch<WpPost>(`posts/${id}`, { tags: [CACHE_TAGS.posts] });
     if (post) return { slug: post.slug, title: post.title.rendered, type: "post" };
-    const page = await wpFetch<WpPost>(`pages/${id}`);
+    const page = await wpFetch<WpPost>(`pages/${id}`, { tags: [CACHE_TAGS.pages] });
     if (page) return { slug: page.slug, title: page.title.rendered, type: "page" };
     return null;
 }
@@ -321,7 +368,7 @@ export async function getPostOrPageById(id: number): Promise<{ slug: string; tit
 // ── Contact Config ────────────────────────────────────────────────────────────────────────────
 
 export async function getContactConfig(): Promise<SmanasContactConfig | null> {
-    return wpFetch<SmanasContactConfig>("contact", "smanas/v1");
+    return wpFetch<SmanasContactConfig>("contact", { namespace: "smanas/v1", tags: [CACHE_TAGS.contact] });
 }
 
 // ── Pages (post_type=page) ─────────────────────────────────────────────────────────────────────
@@ -329,6 +376,7 @@ export async function getContactConfig(): Promise<SmanasContactConfig | null> {
 export async function getPageBySlug(slug: string): Promise<WpPost | null> {
     const data = await wpFetch<WpPost[]>(
         `pages?slug=${encodeURIComponent(slug)}&per_page=1`,
+        { tags: [CACHE_TAGS.pages] },
     );
     if (data === null || data.length === 0) return null;
     return data[0];
@@ -337,7 +385,7 @@ export async function getPageBySlug(slug: string): Promise<WpPost | null> {
 // ── Attachments ────────────────────────────────────────────────────────────────────────────────
 
 export async function getMediaById(id: number) {
-    const data = await wpFetch<WpMediaItem>(`media/${id}`);
+    const data = await wpFetch<WpMediaItem>(`media/${id}`, { tags: [CACHE_TAGS.media, mediaTag(id)] });
     if (data === null) {
         return null;
     }
@@ -348,7 +396,7 @@ export async function getMediaById(id: number) {
 
 export async function getTagsByIds(ids: number[]): Promise<WpTag[]> {
     if (ids.length === 0) return [];
-    const data = await wpFetch<WpTag[]>(`tags?include=${ids.join(",")}&per_page=100`);
+    const data = await wpFetch<WpTag[]>(`tags?include=${ids.join(",")}&per_page=100`, { tags: [CACHE_TAGS.tags] });
     return data ?? [];
 }
 
@@ -358,6 +406,7 @@ export async function getTagsByIds(ids: number[]): Promise<WpTag[]> {
 export async function getNextPost(date: string): Promise<WpPost | null> {
     const data = await wpFetch<WpPost[]>(
         `posts?after=${encodeURIComponent(date)}&per_page=1&order=asc`,
+        { tags: [CACHE_TAGS.posts] },
     );
     if (data === null || data.length === 0) return null;
     return data[0];
@@ -367,6 +416,7 @@ export async function getNextPost(date: string): Promise<WpPost | null> {
 export async function getPrevPost(date: string): Promise<WpPost | null> {
     const data = await wpFetch<WpPost[]>(
         `posts?before=${encodeURIComponent(date)}&per_page=1&order=desc`,
+        { tags: [CACHE_TAGS.posts] },
     );
     if (data === null || data.length === 0) return null;
     return data[0];

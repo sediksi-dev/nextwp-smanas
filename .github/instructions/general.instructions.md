@@ -20,8 +20,8 @@ applyTo: "**"
 
 - **Default: Server Component.** Only add `"use client"` when you need browser APIs, event handlers, or stateful hooks.
 - **`lib/wordpress.ts`** — starts with `import "server-only"`. Never import this in Client Components or client-side code.
-- **`lib/api.ts`** — client-safe BFF wrapper. Client Components always fetch data via this file (calls `/api/*` internal routes).
-- **`app/api/*` routes** — proxy between client and WordPress. They import from `lib/wordpress.ts` directly (they are server-side).
+- **Client Components get data as props** from a Server Component parent. There is no client-side data layer or `/api/*` proxy — every distinct proxy request would be another uncached call (and a cache entry) against WordPress.
+- **`app/api/revalidate`** is the only route handler: the WordPress revalidation webhook.
 
 ### Data fetching pattern
 
@@ -30,9 +30,8 @@ applyTo: "**"
 import { getLatestPosts } from "@/lib/wordpress";
 const posts = await getLatestPosts(6);
 
-// ✅ Client Component — use lib/api.ts
-import { getPosts } from "@/lib/api";
-const posts = await getPosts({ limit: 6 });
+// ✅ Client Component — receive data as props from a Server Component
+<PostList posts={posts} />
 
 // ❌ Never — importing wordpress.ts in a Client Component
 ("use client");
@@ -47,9 +46,8 @@ import { getLatestPosts } from "@/lib/wordpress"; // ERROR: server-only
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | `lib/config.ts`            | `schoolInfo` and `socialLinks` — source of truth for school contact data. Do NOT hardcode these values elsewhere. |
 | `lib/site.ts`              | `navItems` (nested nav tree) and `footerGroups` — navigation structure                                            |
-| `lib/wordpress.ts`         | All WordPress API functions with ISR. Server-only.                                                                |
-| `lib/api.ts`               | Client-safe BFF wrappers mirroring `lib/wordpress.ts`                                                             |
-| `lib/utils.ts`             | `cn()`, `parseGalleryPhotos()`, `parseHtmlContent()`                                                              |
+| `lib/wordpress.ts`         | All WordPress API functions with ISR + cache tags (`CACHE_TAGS`). Server-only.                                    |
+| `lib/utils.ts`             | `cn()`, `isWpSlug()`, `parsePageParam()`, `parseHtmlContent()`                                                    |
 | `types/wordpress.ts`       | All shared types: `WpPost`, `WpTeacher`, `WpGalleryItem`, `Achievement`, etc.                                     |
 | `app/globals.css`          | All CSS variables and Tailwind utility classes                                                                    |
 | `.github/system-design.md` | Visual design rules — read before any styling work                                                                |
@@ -67,7 +65,7 @@ import { getLatestPosts } from "@/lib/wordpress"; // ERROR: server-only
   ```
 - **Type Props explicitly.** Never use implicit `any`.
 - **Use types from `types/wordpress.ts`** for all WordPress data shapes. Do not re-declare locally.
-- **Return types on API functions** — always explicit for `lib/wordpress.ts` and `lib/api.ts`.
+- **Return types on API functions** — always explicit for `lib/wordpress.ts`.
 
 ---
 
@@ -198,32 +196,13 @@ export async function generateMetadata(): Promise<Metadata> {
 
 ---
 
-## 7. API Route Conventions
+## 7. Data Fetching & Caching Conventions
 
-### BFF route pattern
-
-```ts
-import { NextRequest, NextResponse } from "next/server";
-import { myFunction } from "@/lib/wordpress";
-
-export async function GET(request: NextRequest) {
-  // Validate + sanitize query params
-  const page = Math.max(
-    1,
-    Number(request.nextUrl.searchParams.get("page") ?? 1),
-  );
-
-  const data = await myFunction(page);
-  if (data === null) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-  return NextResponse.json(data);
-}
-```
-
-- **Always validate query params** — use `Math.max(1, Number(...))` for numeric params, whitelist strings.
-- **Never trust raw user input** — sanitize before passing to fetch functions.
-- Route handlers import from `lib/wordpress.ts` (they run server-side).
+- **Every WordPress fetch goes through `wpFetch`/`wpFetchWithMeta` in `lib/wordpress.ts`** with the `CACHE_TAGS` entry for its content type. Add the matching `contentType` → tag mapping in `app/api/revalidate/route.ts` when adding a new content type.
+- **Don't shorten `revalidate`.** Content updates arrive through the webhook; `WP_REVALIDATE_SECONDS` (24h) is only a fallback. Each expiry re-renders and re-writes every visited page (Vercel ISR writes).
+- **Visitor-supplied values never become cache keys unchecked**: search queries use `noStore: true`; slugs go through `isWpSlug()` and `?page=` through `parsePageParam()` before reaching WordPress.
+- **Encode path segments** (`encodeURIComponent`) — requests carry the application password, so an unencoded `../` reaches arbitrary WordPress endpoints.
+- **Don't add `app/api/*` proxy routes** for data; pass data from Server Components instead.
 
 ### Revalidate webhook
 
@@ -245,7 +224,7 @@ The `/api/revalidate` route requires `x-webhook-secret` header matching `WORDPRE
 
 - Prefer Server Components to reduce client JS bundle.
 - Images: always use `next/image` with explicit `width`/`height` or `fill` + `sizes`.
-- Never use `useEffect` to fetch data — use Server Components or React Query patterns via `lib/api.ts`.
+- Never use `useEffect` to fetch data — fetch in Server Components and pass data down as props.
 - Don't import heavy client libraries (charts, xlsx) at the page level — lazy-load in `_components/`.
 
 ---

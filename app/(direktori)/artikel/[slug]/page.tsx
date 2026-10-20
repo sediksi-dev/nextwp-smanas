@@ -12,6 +12,7 @@ import {
     getPrevPost,
     getNextPost,
 } from "@/lib/wordpress";
+import { isWpSlug } from "@/lib/utils";
 import { PageWrap } from "@/components/layout/page-wrap";
 import { Section } from "@/components/layout/section";
 import { Badge } from "@/components/ui/badge";
@@ -35,7 +36,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
-    const post = await getPostBySlug(slug);
+    const post = isWpSlug(slug) ? await getPostBySlug(slug) : null;
     if (!post) return { title: "Artikel tidak ditemukan | SMA Nasional Malang" };
     const title = post.title.rendered;
     const description = post.excerpt.rendered.replace(/<[^>]+>/g, "").slice(0, 160);
@@ -47,7 +48,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ArtikelDetailPage({ params }: Props) {
     const { slug } = await params;
-    const post = await getPostBySlug(slug);
+    const post = isWpSlug(slug) ? await getPostBySlug(slug) : null;
     if (!post) notFound();
 
     // Phase 2: parallel fetch all supplemental data

@@ -12,7 +12,7 @@ Website resmi **SMA Nasional Malang** dibangun dengan arsitektur **headless CMS*
 4. [Struktur Proyek](#4-struktur-proyek)
 5. [Setup & Development](#5-setup--development)
 6. [Variabel Lingkungan](#6-variabel-lingkungan)
-7. [Internal API Routes (BFF)](#7-internal-api-routes-bff)
+7. [Webhook Revalidasi](#7-webhook-revalidasi)
 8. [Strategi Caching (ISR)](#8-strategi-caching-isr)
 9. [Deployment](#9-deployment)
 10. [WordPress CMS Backend](#10-wordpress-cms-backend)
@@ -27,17 +27,14 @@ Browser
   ▼
 Next.js Frontend (App Router, SSR/ISR)
   │
-  ├── Server Components ──► lib/wordpress.ts (server-only) ──► WordPress REST API
-  │                                                              smanas/v1 + wp/v2
-  │
-  └── Client Components ──► lib/api.ts ──► /api/* (Next.js BFF routes)
-                                               │
-                                               └──► lib/wordpress.ts ──► WordPress REST API
+  └── Server Components ──► lib/wordpress.ts (server-only) ──► WordPress REST API
+                                                                 smanas/v1 + wp/v2 + jet-cct
+
+WordPress ──► POST /api/revalidate (webhook) ──► revalidateTag(...)
 ```
 
-- **`lib/wordpress.ts`** — server-only, dipanggil langsung dari Server Components dan API routes. Tidak pernah di-bundle ke client.
-- **`lib/api.ts`** — client-safe BFF wrapper. Memanggil `/api/*` internal routes. Dipakai dari Client Components yang butuh data fresh.
-- **`app/api/*`** — 12 BFF API routes yang menjadi proxy antara client dan WordPress.
+- **`lib/wordpress.ts`** — server-only, dipanggil langsung dari Server Components. Tidak pernah di-bundle ke client.
+- **`app/api/revalidate`** — satu-satunya API route: webhook dari WordPress untuk revalidasi cache per tag.
 
 ---
 
@@ -139,7 +136,7 @@ nextwp-smanas/
 │   │   ├── tentang/
 │   │   └── visi-misi/
 │   ├── [...slug]/               # Catch-all untuk WordPress Pages
-│   └── api/                    # BFF API routes (12 routes)
+│   └── api/revalidate/          # Webhook revalidasi dari WordPress
 ├── components/
 │   ├── elements/                # Atomic: PostCard, GalleryLightbox, SectionTitle
 │   ├── layout/                  # Shell: SiteHeader, SiteFooter, PageWrap
@@ -147,10 +144,9 @@ nextwp-smanas/
 │   ├── sections/                # Homepage sections: Hero, Posts, Gallery, dll
 │   └── ui/                     # shadcn/ui primitives
 ├── lib/
-│   ├── api.ts                   # Client-safe BFF wrapper
 │   ├── config.ts                # School info & social links (source of truth)
 │   ├── site.ts                  # Nav tree & footer groups
-│   ├── utils.ts                 # cn(), parseGalleryPhotos(), parseHtmlContent()
+│   ├── utils.ts                 # cn(), isWpSlug(), parsePageParam(), parseHtmlContent()
 │   ├── wordpress.ts             # Server-only WP API layer (ISR)
 │   └── youtube.ts               # YouTube RSS feed
 ├── types/
@@ -210,8 +206,9 @@ WP_URL=https://dash.smanasionalmalang.sch.id
 WP_APP_USERNAME=your-application-user
 WP_APP_PASSWORD=xxxx xxxx xxxx xxxx xxxx xxxx
 
-# Durasi ISR revalidation dalam detik (default: 1800 = 30 menit)
-WP_REVALIDATE_SECONDS=1800
+# Revalidasi berbasis waktu dalam detik — hanya fallback, update konten lewat webhook
+# (default: 86400 = 24 jam). Nilai kecil = halaman lebih sering ditulis ulang = ISR Writes Vercel naik.
+WP_REVALIDATE_SECONDS=86400
 
 # Secret untuk webhook revalidation dari WordPress
 WORDPRESS_WEBHOOK_SECRET=your-secret-string
@@ -224,56 +221,55 @@ YOUTUBE_API_KEY=your-youtube-api-key
 
 ---
 
-## 7. Internal API Routes (BFF)
+## 7. Webhook Revalidasi
 
-Route-route ini berperan sebagai **Backend for Frontend (BFF)**: client components memanggil `/api/*`, bukan WordPress langsung.
+Semua data diambil oleh Server Components lewat `lib/wordpress.ts`; tidak ada API proxy untuk client. Satu-satunya route adalah:
 
-| Method | Route                          | Keterangan                                            |
-| ------ | ------------------------------ | ----------------------------------------------------- |
-| GET    | `/api/config`                  | Konfigurasi global situs (dari `smanas/v1/configs`)   |
-| GET    | `/api/contact`                 | Data kontak sekolah                                   |
-| GET    | `/api/profile`                 | Data profil, visi-misi, struktur organisasi           |
-| GET    | `/api/posts`                   | Posts: `?limit=N` atau `?page&per_page&search`        |
-| GET    | `/api/posts/[slug]`            | Single post by slug                                   |
-| GET    | `/api/categories`              | Semua kategori artikel                                |
-| GET    | `/api/categories/[slug]`       | Kategori by slug                                      |
-| GET    | `/api/categories/[slug]/posts` | Posts per kategori (paginated)                        |
-| GET    | `/api/gallery`                 | Galeri: `?preview=true&limit=N` atau `?page&per_page` |
-| GET    | `/api/gallery/[id]`            | Single gallery item                                   |
-| GET    | `/api/teachers`                | Teachers: `?category=kepsek\|wakasek\|guru\|staf`     |
-| GET    | `/api/teachers/[id]`           | Single teacher by `_ID`                               |
-| GET    | `/api/achievements`            | Prestasi: `?with_image=true` atau filter params       |
-| GET    | `/api/ppdb`                    | PPDB list: `?limit=N`                                 |
-| GET    | `/api/media/[id]`              | WordPress media item by ID                            |
-| POST   | `/api/revalidate`              | Webhook dari WordPress untuk trigger ISR              |
+| Method | Route             | Keterangan                                   |
+| ------ | ----------------- | -------------------------------------------- |
+| POST   | `/api/revalidate` | Webhook dari WordPress untuk revalidasi data |
 
-### Revalidate Webhook
-
-WordPress mengirim `POST /api/revalidate` dengan header `x-webhook-secret` yang diverifikasi terhadap env `WORDPRESS_WEBHOOK_SECRET`. Body contoh:
+Plugin **Next.js Revalidation** mengirim `POST /api/revalidate` dengan header `x-webhook-secret` (diverifikasi terhadap env `WORDPRESS_WEBHOOK_SECRET`) dan body:
 
 ```json
 { "contentType": "post", "contentId": 123 }
 ```
 
+`contentType` dipetakan ke cache tag (lihat bagian 8). Tipe yang tidak dipakai frontend (`author`, `menu`, `nav_menu_item`, `oembed_cache`, dll.) dijawab `200` tanpa revalidasi.
+
 ---
 
 ## 8. Strategi Caching (ISR)
 
-Semua fetch ke WordPress menggunakan `next: { revalidate: WP_REVALIDATE_SECONDS }` (default 30 menit). Revalidasi on-demand dipicu via webhook WordPress ketika konten berubah.
+Setiap kali cache sebuah halaman kedaluwarsa atau di-revalidate, halaman itu dirender ulang dan ditulis ulang ke cache saat dikunjungi berikutnya — di Vercel ini dihitung sebagai **ISR Writes**. Karena itu:
 
-| Cache Tag             | Di-revalidate ketika                  |
-| --------------------- | ------------------------------------- |
-| `wordpress`           | Semua perubahan konten (catch-all)    |
-| `posts`               | Post baru atau diedit                 |
-| `post-{id}`           | Post spesifik diedit                  |
-| `posts-page-1`        | Post baru (mengubah urutan halaman 1) |
-| `categories`          | Kategori ditambah/diubah              |
-| `category-{id}`       | Kategori spesifik diubah              |
-| `posts-category-{id}` | Post di kategori tertentu berubah     |
-| `tags`                | Tag diubah                            |
-| `tag-{id}`            | Tag spesifik diubah                   |
-| `authors`             | Data author diubah                    |
-| `author-{id}`         | Author spesifik diubah                |
+- **Revalidasi utama lewat webhook, per tag.** Hanya data yang berubah yang di-invalidate, bukan seluruh situs.
+- **Revalidasi berbasis waktu hanya fallback**: `WP_REVALIDATE_SECONDS` (default 24 jam). Feed YouTube di beranda: 6 jam.
+- **Pencarian (`?q=`) tidak di-cache** (`cache: "no-store"`), karena setiap kata kunci akan menjadi entri cache baru.
+- **Path probe bot** (`/wp-login.php`, `/wp-content/…`, `/.env`, slug dengan karakter yang tidak mungkin ada di WordPress) langsung 404 tanpa query ke WordPress.
+
+Semua fetch ke WordPress diberi tag `wordpress` ditambah tag per jenis data:
+
+| `contentType` webhook                                   | Cache tag          |
+| ------------------------------------------------------- | ------------------ |
+| `all` (tombol *Revalidate all* di plugin)               | `wordpress` (semua) |
+| `post`                                                  | `wp-posts`, `wp-categories` (jumlah artikel per kategori) |
+| `page`                                                  | `wp-pages`         |
+| `ppdb`                                                  | `wp-ppdb`          |
+| `wp_block` (synced pattern)                             | `wp-posts`, `wp-pages`, `wp-ppdb` |
+| `media`, `attachment`                                   | `wp-media-{id}` + `wp-media-files` (file mentah, mis. xlsx hasil PPDB) |
+| `category`                                              | `wp-categories`, `wp-posts`, `wp-site-config` |
+| `tag`                                                   | `wp-tags`, `wp-posts` |
+| `gallery` *                                             | `wp-gallery`       |
+| `teachers` *                                            | `wp-teachers`      |
+| `awards` *                                              | `wp-achievements`  |
+| `frontend`, `frontpage_config`, `slider_settings` *     | `wp-site-config`   |
+| `profile_config` *                                      | `wp-profiles`      |
+| `contact_config` *                                      | `wp-contact`       |
+
+\* JetEngine CCT & Options Pages **tidak** memicu plugin Next.js Revalidation. Tanpa hook tambahan (lihat [README.WP.md](README.WP.md#revalidasi-frontend-hook-tambahan-di-smanas-configphp)), perubahannya baru tampil setelah `WP_REVALIDATE_SECONDS` atau setelah klik *Revalidate all* di pengaturan plugin. Hook yang sama juga mencegah simpan draft/autosave memicu revalidasi.
+
+Jika WordPress error (5xx/timeout) saat halaman dirender ulang, render dibatalkan sehingga ISR tetap menyajikan versi terakhir yang benar — bukan menyimpan halaman kosong selama 24 jam. Konsekuensinya, `next build` gagal bila WordPress sedang down saat deploy.
 
 ---
 

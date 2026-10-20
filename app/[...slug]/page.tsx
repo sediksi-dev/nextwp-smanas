@@ -5,13 +5,24 @@ import type { Metadata } from "next";
 import { getPageBySlug, getPostBySlug, getMediaById } from "@/lib/wordpress";
 import { PageWrap } from "@/components/layout/page-wrap";
 import { Section } from "@/components/layout/section";
+import { isWpSlug } from "@/lib/utils";
 
 interface Props {
     params: Promise<{ slug: string[] }>;
 }
 
+/**
+ * Bots probe every WordPress-looking site for /wp-login.php, /wp-content/…, /.env
+ * and the like. Those land here; answering 404 without a WordPress lookup keeps each
+ * probe from adding two Data Cache entries.
+ */
+function isProbePath(slug: string[]): boolean {
+    return slug.some((segment) => !isWpSlug(segment) || /^wp(-|$)/i.test(segment));
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
+    if (isProbePath(slug)) return { title: "Halaman Tidak Ditemukan | SMA Nasional Malang" };
     const leafSlug = slug[slug.length - 1];
     const page = await getPageBySlug(leafSlug);
     if (!page) return { title: "Halaman Tidak Ditemukan | SMA Nasional Malang" };
@@ -28,6 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function CatchAllPage({ params }: Props) {
     const { slug } = await params;
+    if (isProbePath(slug)) notFound();
 
     // Try the leaf segment first; WordPress REST API matches page slugs, not full paths.
     const leafSlug = slug[slug.length - 1];
