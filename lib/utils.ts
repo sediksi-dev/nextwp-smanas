@@ -18,6 +18,15 @@ export function isWpSlug(value: string): boolean {
     return /^[A-Za-z0-9_%-]{1,200}$/.test(encoded);
 }
 
+/** Formats a WordPress `date` (site-local, no timezone) as e.g. "21 Juli 2025". */
+export function formatWpDate(date: string): string {
+    return new Date(date).toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+    });
+}
+
 /** Parses a `?page=` search param into a positive integer, defaulting to 1. */
 export function parsePageParam(value: string | undefined): number {
     const page = Number(value);

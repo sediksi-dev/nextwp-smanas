@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Section } from "@/components/layout/section";
 import Link from "next/link";
+import { formatWpDate } from "@/lib/utils";
 import { SectionTitle } from "@/components/elements/section-title";
 import { PostCardList } from "@/components/elements/post-card";
 import { getPostsByCategory } from "@/lib/wordpress";
@@ -83,7 +84,7 @@ export async function PostsSection(props: PostsSectionProps) {
                                     excerpt={post.excerpt.rendered || ""}
                                     image_id={Number(post.featured_media) || undefined}
                                     href={`/artikel/${post.slug}`}
-                                    date={post.date}
+                                    date={formatWpDate(post.date)}
                                 />
                             </div>
                         ))}
@@ -105,7 +106,7 @@ export async function PostsSection(props: PostsSectionProps) {
                                     excerpt={post.excerpt.rendered || ""}
                                     image_id={Number(post.featured_media) || undefined}
                                     href={`/artikel/${post.slug}`}
-                                    date={post.date}
+                                    date={formatWpDate(post.date)}
                                 />
                             </div>
                         ))}
@@ -127,7 +128,7 @@ export async function PostsSection(props: PostsSectionProps) {
                                     excerpt={post.excerpt.rendered || ""}
                                     image_id={Number(post.featured_media) || undefined}
                                     href={`/artikel/${post.slug}`}
-                                    date={post.date}
+                                    date={formatWpDate(post.date)}
                                 />
                             </div>
                         ))}
